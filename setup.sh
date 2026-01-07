@@ -82,10 +82,20 @@ switch_network() {
 
             echo -e "${GREEN}Switched to branch: $network${NC}"
         else
-            echo -e "${YELLOW}Branch '$network' not found. Creating config for future use...${NC}"
+            echo -e "${RED}Error: Branch '$network' does not exist.${NC}"
+            echo ""
+            echo "Available branches:"
+            git branch -r | grep origin | sed 's/origin\//  /' | grep -v HEAD
+            echo ""
+            echo "This network version may not be available yet."
+            echo "Check https://github.com/critesjosh/aztec-claude-plugin for available versions."
+            exit 1
         fi
     else
-        echo -e "${YELLOW}Not a git repository. Creating config file only...${NC}"
+        echo -e "${RED}Error: Not a git repository.${NC}"
+        echo "Please clone the plugin repository first:"
+        echo "  git clone https://github.com/critesjosh/aztec-claude-plugin"
+        exit 1
     fi
 
     # Write config file
