@@ -30,6 +30,37 @@ Add to your project's `.claude/settings.json`:
 }
 ```
 
+## Network Versions
+
+This plugin supports multiple Aztec network versions with potentially different syntax. Switch between them based on your target deployment:
+
+```bash
+# Clone with a specific network version
+git clone https://github.com/critesjosh/aztec-plugin
+cd aztec-plugin
+./setup.sh testnet  # or: mainnet, devnet
+```
+
+### Available Networks
+
+| Network | Description | Use Case |
+|---------|-------------|----------|
+| `mainnet` | Stable production release | Production deployments |
+| `testnet` | Pre-release testing | Integration testing |
+| `devnet` | Latest development | Experimenting with new features |
+
+### Switching Networks
+
+```bash
+# Switch to a different network
+./setup.sh devnet
+
+# Check current network
+./setup.sh status
+```
+
+See [NETWORK.md](./NETWORK.md) for detailed version differences.
+
 ## Features
 
 ### Slash Commands
@@ -141,6 +172,9 @@ aztec-plugin/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
 ├── .lsp.json                # Noir LSP configuration
+├── setup.sh                 # Network version switcher
+├── network.json             # Current network config (git-ignored)
+├── NETWORK.md               # Version differences documentation
 ├── agents/
 │   ├── contract-reviewer.md # Contract review agent
 │   └── security-auditor.md  # Security audit agent
