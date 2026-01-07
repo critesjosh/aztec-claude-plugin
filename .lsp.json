@@ -1,0 +1,10 @@
+{
+  "noir": {
+    "command": "nargo",
+    "args": ["lsp"],
+    "extensionToLanguage": {
+      ".nr": "noir"
+    },
+    "transport": "stdio"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "aztec",
+  "version": "1.0.0",
+  "description": "Claude Code plugin for Aztec smart contract and application development. Provides specialized agents, skills, and commands for building privacy-preserving applications on Aztec Network.",
+  "author": {
+    "name": "critesjosh"
+  },
+  "keywords": [
+    "aztec",
+    "noir",
+    "smart-contracts",
+    "privacy",
+    "zk-rollup",
+    "blockchain",
+    "web3"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/critesjosh/aztec-plugin"
+}
