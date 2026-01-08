@@ -4,6 +4,12 @@ A Claude Code plugin for Aztec smart contract and application development. This 
 
 ## Installation
 
+First, clone the repository:
+
+```bash
+git clone https://github.com/critesjosh/aztec-plugin
+```
+
 ### Option 1: Load from directory (Development)
 
 ```bash
@@ -43,11 +49,11 @@ cd aztec-plugin
 
 ### Available Networks
 
-| Network | Description | Use Case |
-|---------|-------------|----------|
-| `mainnet` | Stable production release | Production deployments |
-| `testnet` | Pre-release testing | Integration testing |
-| `devnet` | Latest development | Experimenting with new features |
+| Network   | Description               | Use Case                        |
+| --------- | ------------------------- | ------------------------------- |
+| `mainnet` | Stable production release | Production deployments          |
+| `testnet` | Pre-release testing       | Integration testing             |
+| `devnet`  | Latest development        | Experimenting with new features |
 
 ### Switching Networks
 
@@ -65,24 +71,26 @@ See [NETWORK.md](./NETWORK.md) for detailed version differences.
 
 ### Slash Commands
 
-| Command | Description |
-|---------|-------------|
-| `/aztec:new-contract <name>` | Create a new Aztec contract with boilerplate |
-| `/aztec:review-contract <path>` | Review a contract for best practices |
-| `/aztec:add-function <description>` | Add a new function to an existing contract |
-| `/aztec:add-test <description>` | Add a test for a contract function |
-| `/aztec:explain <concept>` | Explain an Aztec concept or pattern |
-| `/aztec:deploy <contract>` | Generate a TypeScript deployment script |
-| `/aztec:generate-client <contract>` | Generate a TypeScript client class |
+| Command                             | Description                                  |
+| ----------------------------------- | -------------------------------------------- |
+| `/aztec:new-contract <name>`        | Create a new Aztec contract with boilerplate |
+| `/aztec:review-contract <path>`     | Review a contract for best practices         |
+| `/aztec:add-function <description>` | Add a new function to an existing contract   |
+| `/aztec:add-test <description>`     | Add a test for a contract function           |
+| `/aztec:explain <concept>`          | Explain an Aztec concept or pattern          |
+| `/aztec:deploy <contract>`          | Generate a TypeScript deployment script      |
+| `/aztec:generate-client <contract>` | Generate a TypeScript client class           |
 
 ### Agents
 
 **Contract Reviewer** (`contract-reviewer`)
+
 - Reviews Aztec contracts for correctness and best practices
 - Checks private/public function usage
 - Identifies common issues and anti-patterns
 
 **Security Auditor** (`security-auditor`)
+
 - Performs security audits on Aztec contracts
 - Identifies privacy vulnerabilities
 - Detects ZK-specific security issues
@@ -91,7 +99,8 @@ See [NETWORK.md](./NETWORK.md) for detailed version differences.
 
 #### Noir Contract Development
 
-**Aztec Developer** (`aztec-developer`) - *Comprehensive*
+**Aztec Developer** (`aztec-developer`) - _Comprehensive_
+
 - Complete patterns for Aztec development
 - Contract structure, storage, notes, cross-contract calls
 - TXE unit testing with setup patterns
@@ -99,11 +108,13 @@ See [NETWORK.md](./NETWORK.md) for detailed version differences.
 - Based on [aztec-claude-skill](https://github.com/jp4g/aztec-claude-skill)
 
 **Aztec Contract Development** (`aztec-contract-dev`)
+
 - Assists with writing and modifying contracts
 - Implements private/public functions
 - Manages state and notes
 
 **Aztec Testing** (`aztec-testing`)
+
 - Helps write unit and integration tests
 - Uses TestEnvironment patterns
 - Debugs test failures
@@ -111,21 +122,25 @@ See [NETWORK.md](./NETWORK.md) for detailed version differences.
 #### TypeScript Integration (NEW)
 
 **Aztec Deploy** (`aztec-deploy`)
+
 - Generate TypeScript deployment scripts
 - Fee payment configuration (Sponsored, Private, Public)
 - Environment configuration (local network, devnet)
 
 **Aztec Accounts** (`aztec-accounts`)
+
 - Schnorr account creation and deployment
 - Account recovery from credentials
 - Key management patterns
 
 **Aztec TypeScript** (`aztec-typescript`)
+
 - TypeScript client code generation
 - Wallet setup and configuration
 - Transaction patterns and error handling
 
 **Aztec E2E Testing** (`aztec-e2e-testing`)
+
 - Jest E2E test generation
 - Sponsored fee testing patterns
 - Multi-user test scenarios
@@ -133,6 +148,7 @@ See [NETWORK.md](./NETWORK.md) for detailed version differences.
 ### Noir LSP Integration
 
 The plugin includes LSP (Language Server Protocol) configuration for Noir, providing:
+
 - Real-time diagnostics and error checking
 - Code intelligence for `.nr` files
 - Integration with the Nargo toolchain
