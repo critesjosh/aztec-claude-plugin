@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "aztec-plugins",
+  "owner": {
+    "name": "critesjosh"
+  },
+  "plugins": [
+    {
+      "name": "aztec",
+      "source": {
+        "source": "github",
+        "repo": "critesjosh/aztec-plugin"
+      },
+      "description": "Claude Code plugin for Aztec smart contract and application development",
+      "version": "1.0.0"
+    }
+  ]
+}

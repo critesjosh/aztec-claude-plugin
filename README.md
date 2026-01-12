@@ -4,37 +4,38 @@ A Claude Code plugin for Aztec smart contract and application development. This 
 
 ## Installation
 
-First, clone the repository:
+### Option 1: Install from Marketplace (Recommended)
+
+```
+/plugin marketplace add critesjosh/aztec-plugin
+/plugin install aztec@aztec-plugins
+```
+
+### Option 2: Load from directory (Development)
+
+Clone the repository and load directly:
 
 ```bash
 git clone https://github.com/critesjosh/aztec-plugin
-```
-
-### Option 1: Load from directory (Development)
-
-```bash
 claude --plugin-dir /path/to/aztec-plugin
 ```
 
-### Option 2: Install globally
+## Updating
 
-Add to your `~/.claude/settings.json`:
+### Marketplace installs
 
-```json
-{
-  "plugins": ["/path/to/aztec-plugin"]
-}
+```
+/plugin marketplace update
 ```
 
-### Option 3: Install per project
+### Local installs
 
-Add to your project's `.claude/settings.json`:
-
-```json
-{
-  "plugins": ["../aztec-plugin"]
-}
+```bash
+cd /path/to/aztec-plugin
+git pull
 ```
+
+Changes take effect on the next Claude Code session.
 
 ## Network Versions
 
