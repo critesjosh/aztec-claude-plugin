@@ -15,5 +15,6 @@
     "web3"
   ],
   "license": "MIT",
-  "repository": "https://github.com/critesjosh/aztec-plugin"
+  "repository": "https://github.com/critesjosh/aztec-plugin",
+  "mcpServers": "../.mcp.json"
 }

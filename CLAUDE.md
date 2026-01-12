@@ -269,6 +269,31 @@ aztec = { git = "https://github.com/AztecProtocol/aztec-packages/", tag = "aztec
 value_note = { git = "https://github.com/AztecProtocol/aztec-packages/", tag = "aztec-packages-v0.XX.X", directory = "noir-projects/aztec-nr/value-note" }
 ```
 
+## Looking Up Latest Documentation
+
+This plugin includes the Context7 MCP server for fetching up-to-date Aztec documentation. Use it when:
+- You need the latest API details that may have changed
+- The user asks about features not covered in this guide
+- You want to verify syntax or patterns are current
+
+**How to use Context7 for Aztec:**
+
+```
+# For official Aztec docs (recommended for most queries)
+resolve-library-id: libraryName="aztec", query="<your question>"
+# Returns: /websites/aztec_network
+
+# Then query:
+query-docs: libraryId="/websites/aztec_network", query="<specific question>"
+
+# For monorepo source code and examples
+query-docs: libraryId="/aztecprotocol/aztec-packages", query="<specific question>"
+```
+
+**When to use which source:**
+- `/websites/aztec_network` - Official docs, tutorials, guides (7k+ snippets)
+- `/aztecprotocol/aztec-packages` - Source code, implementation details (27k+ snippets)
+
 ## Useful Resources
 
 - Aztec Documentation: https://docs.aztec.network
