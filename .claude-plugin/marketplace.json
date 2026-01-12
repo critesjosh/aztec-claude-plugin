@@ -9,7 +9,7 @@
       "name": "aztec",
       "source": {
         "source": "github",
-        "repo": "critesjosh/aztec-plugin"
+        "repo": "critesjosh/aztec-claude-plugin"
       },
       "description": "Claude Code plugin for Aztec smart contract and application development",
       "version": "1.0.0"

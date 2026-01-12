@@ -7,7 +7,7 @@ A Claude Code plugin for Aztec smart contract and application development. This 
 ### Option 1: Install from Marketplace (Recommended)
 
 ```
-/plugin marketplace add critesjosh/aztec-plugin
+/plugin marketplace add critesjosh/aztec-claude-plugin
 /plugin install aztec@aztec-plugins
 ```
 
@@ -16,7 +16,7 @@ A Claude Code plugin for Aztec smart contract and application development. This 
 Clone the repository and load directly:
 
 ```bash
-git clone https://github.com/critesjosh/aztec-plugin
+git clone https://github.com/critesjosh/aztec-claude-plugin
 claude --plugin-dir /path/to/aztec-plugin
 ```
 
@@ -43,7 +43,7 @@ This plugin supports multiple Aztec network versions with potentially different 
 
 ```bash
 # Clone with a specific network version
-git clone https://github.com/critesjosh/aztec-plugin
+git clone https://github.com/critesjosh/aztec-claude-plugin
 cd aztec-plugin
 ./setup.sh testnet  # or: mainnet, devnet
 ```
