@@ -16,5 +16,10 @@
   ],
   "license": "MIT",
   "repository": "https://github.com/critesjosh/aztec-claude-plugin",
-  "mcpServers": "../.mcp.json"
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    }
+  }
 }
