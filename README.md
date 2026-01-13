@@ -2,7 +2,7 @@
 
 A Claude Code plugin for Aztec smart contract and application development. This plugin provides specialized agents, skills, and commands to help you build privacy-preserving applications on the Aztec Network.
 
-⚠️ This plugin is currently set up to run on v3.0.0-devnet.20251212
+**Supports multiple Aztec versions** with auto-detection from your project's Nargo.toml.
 
 ## Installation
 
@@ -39,36 +39,48 @@ git pull
 
 Changes take effect on the next Claude Code session.
 
-## Network Versions
+## Version Support
 
-This plugin supports multiple Aztec network versions with potentially different syntax. Switch between them based on your target deployment:
+This plugin supports multiple Aztec versions. **Default: devnet** (latest development).
 
-```bash
-# Clone with a specific network version
-git clone https://github.com/critesjosh/aztec-claude-plugin
-cd aztec-plugin
-./setup.sh testnet  # or: mainnet, devnet
+### Auto-Detection
+
+The plugin automatically detects your project's Aztec version from `Nargo.toml`:
+
+```toml
+aztec = { git = "...", tag = "aztec-packages-v0.87.4-devnet.0", ... }
 ```
 
-### Available Networks
+### Available Versions
 
-| Network   | Description               | Use Case                        |
-| --------- | ------------------------- | ------------------------------- |
-| `mainnet` | Stable production release | Production deployments          |
-| `testnet` | Pre-release testing       | Integration testing             |
-| `devnet`  | Latest development        | Experimenting with new features |
+| Version   | Tag Pattern                    | Status                         |
+| --------- | ------------------------------ | ------------------------------ |
+| `devnet`  | `aztec-packages-v*-devnet*`    | Default, active development    |
+| `testnet` | `aztec-packages-v0.8[0-6]*`    | Pre-release testing            |
+| `mainnet` | `aztec-packages-v1.*`          | Future stable release          |
 
-### Switching Networks
+### Manual Version Selection
 
 ```bash
-# Switch to a different network
-./setup.sh devnet
+# Set version manually
+./setup.sh devnet     # Use devnet syntax (default)
+./setup.sh testnet    # Use testnet syntax
+./setup.sh mainnet    # Use mainnet syntax (when available)
 
-# Check current network
+# Auto-detect from Nargo.toml
+./setup.sh detect
+
+# Check current version
 ./setup.sh status
 ```
 
-See [NETWORK.md](./NETWORK.md) for detailed version differences.
+### Slash Command
+
+```
+/aztec:detect-version    # Scan project and report version
+```
+
+See [NETWORK.md](./NETWORK.md) for detailed version differences and syntax references.
 
 ## Features
 
@@ -191,8 +203,12 @@ aztec-plugin/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
 ├── .lsp.json                # Noir LSP configuration
-├── setup.sh                 # Network version switcher
-├── network.json             # Current network config (git-ignored)
+├── setup.sh                 # Version selector (no git required)
+├── versions/                # Version-specific syntax references
+│   ├── versions.json        # Version definitions and patterns
+│   ├── devnet/syntax.md     # Devnet syntax reference
+│   ├── testnet/syntax.md    # Testnet syntax reference
+│   └── mainnet/syntax.md    # Mainnet syntax reference
 ├── NETWORK.md               # Version differences documentation
 ├── agents/
 │   ├── contract-reviewer.md # Contract review agent

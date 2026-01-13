@@ -1,16 +1,19 @@
 #!/bin/bash
 #
-# Aztec Plugin Network Setup Script
-# Switches the plugin to use syntax/patterns for a specific Aztec network version
+# Aztec Plugin Version Setup Script
+# Sets the active Aztec version for syntax and patterns
+#
+# This script does NOT require git - it works with both cloned repos and marketplace installs.
 #
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE="$SCRIPT_DIR/network.json"
+CONFIG_FILE="$SCRIPT_DIR/.aztec-version"
+VERSIONS_FILE="$SCRIPT_DIR/versions/versions.json"
 
-# Available networks (branches)
-NETWORKS=("mainnet" "testnet" "devnet")
+# Available versions
+VERSIONS=("devnet" "testnet" "mainnet")
 
 # Colors for output
 RED='\033[0;31m'
@@ -20,112 +23,156 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 print_usage() {
-    echo "Usage: ./setup.sh <network>"
+    echo "Usage: ./setup.sh <command>"
     echo ""
-    echo "Available networks:"
-    echo "  mainnet  - Stable release for Aztec mainnet"
-    echo "  testnet  - Current testnet version"
-    echo "  devnet   - Latest development version (may have breaking changes)"
+    echo "Commands:"
+    echo "  devnet   - Set to latest development version (default)"
+    echo "  testnet  - Set to testnet version"
+    echo "  mainnet  - Set to mainnet version (when available)"
+    echo "  status   - Show current version"
+    echo "  detect   - Auto-detect version from Nargo.toml"
     echo ""
     echo "Examples:"
-    echo "  ./setup.sh testnet"
-    echo "  ./setup.sh devnet"
+    echo "  ./setup.sh devnet     # Use devnet syntax"
+    echo "  ./setup.sh status     # Show current setting"
+    echo "  ./setup.sh detect     # Detect from project"
     echo ""
-    echo "Current network: $(get_current_network)"
+    echo "Current version: $(get_current_version)"
 }
 
-get_current_network() {
+get_current_version() {
     if [ -f "$CONFIG_FILE" ]; then
-        grep -o '"network"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" | sed 's/.*"\([^"]*\)"$/\1/' 2>/dev/null || echo "unknown"
+        grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/' || echo "devnet"
     else
-        # Try to detect from git branch
-        git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown"
+        echo "devnet"
     fi
 }
 
-validate_network() {
-    local network="$1"
-    for valid in "${NETWORKS[@]}"; do
-        if [ "$network" == "$valid" ]; then
+validate_version() {
+    local version="$1"
+    for valid in "${VERSIONS[@]}"; do
+        if [ "$version" == "$valid" ]; then
             return 0
         fi
     done
     return 1
 }
 
-switch_network() {
-    local network="$1"
+set_version() {
+    local version="$1"
 
-    echo -e "${BLUE}Switching to $network...${NC}"
-
-    # Check if we're in a git repo
-    if git rev-parse --git-dir > /dev/null 2>&1; then
-        # Check if the branch exists
-        if git show-ref --verify --quiet "refs/heads/$network" || \
-           git show-ref --verify --quiet "refs/remotes/origin/$network"; then
-
-            # Stash any local changes
-            if ! git diff --quiet 2>/dev/null; then
-                echo -e "${YELLOW}Stashing local changes...${NC}"
-                git stash
-            fi
-
-            # Fetch latest and checkout
-            echo "Fetching latest updates..."
-            git fetch origin "$network" 2>/dev/null || true
-
-            if git show-ref --verify --quiet "refs/heads/$network"; then
-                git checkout "$network"
-            else
-                git checkout -b "$network" "origin/$network"
-            fi
-
-            echo -e "${GREEN}Switched to branch: $network${NC}"
-        else
-            echo -e "${RED}Error: Branch '$network' does not exist.${NC}"
-            echo ""
-            echo "Available branches:"
-            git branch -r | grep origin | sed 's/origin\//  /' | grep -v HEAD
-            echo ""
-            echo "This network version may not be available yet."
-            echo "Check https://github.com/critesjosh/aztec-claude-plugin for available versions."
-            exit 1
-        fi
-    else
-        echo -e "${RED}Error: Not a git repository.${NC}"
-        echo "Please clone the plugin repository first:"
-        echo "  git clone https://github.com/critesjosh/aztec-claude-plugin"
-        exit 1
-    fi
+    echo -e "${BLUE}Setting version to $version...${NC}"
 
     # Write config file
     cat > "$CONFIG_FILE" << EOF
 {
-  "network": "$network",
-  "switchedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-  "notes": "Plugin configured for $network. Syntax and patterns match this network version."
+  "version": "$version",
+  "setAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "note": "Plugin configured for $version syntax. See versions/$version/syntax.md for reference."
 }
 EOF
 
-    echo -e "${GREEN}Configuration saved to network.json${NC}"
+    echo -e "${GREEN}Version set to: $version${NC}"
     echo ""
-    echo -e "Network: ${GREEN}$network${NC}"
-    echo "You can now use the plugin with $network-compatible syntax."
+    echo "Syntax reference: versions/$version/syntax.md"
+    echo ""
+
+    # Show version-specific notes
+    case "$version" in
+        "devnet")
+            echo "Using latest development syntax (default)."
+            echo "May have breaking changes between releases."
+            ;;
+        "testnet")
+            echo "Using testnet syntax."
+            echo "For pre-release testing and integration."
+            ;;
+        "mainnet")
+            echo -e "${YELLOW}Note: Mainnet is not yet available.${NC}"
+            echo "Syntax may differ when mainnet launches."
+            ;;
+    esac
 }
 
 show_status() {
-    local current=$(get_current_network)
-    echo -e "Current network: ${GREEN}$current${NC}"
+    local current=$(get_current_version)
+    echo -e "Current version: ${GREEN}$current${NC}"
+    echo ""
 
     if [ -f "$CONFIG_FILE" ]; then
-        echo ""
-        echo "Configuration:"
+        echo "Configuration (.aztec-version):"
         cat "$CONFIG_FILE"
+        echo ""
     fi
 
-    if git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Syntax reference: versions/$current/syntax.md"
+}
+
+detect_version() {
+    echo "Scanning for Nargo.toml files..."
+    echo ""
+
+    # Search for Nargo.toml files
+    local nargo_files=$(find . -name "Nargo.toml" -type f 2>/dev/null | head -10)
+
+    if [ -z "$nargo_files" ]; then
+        echo -e "${YELLOW}No Nargo.toml files found.${NC}"
+        echo "Using default: devnet"
+        return
+    fi
+
+    # Extract version tags
+    local found_tags=""
+    for file in $nargo_files; do
+        local tag=$(grep -o 'tag = "[^"]*"' "$file" 2>/dev/null | head -1 | sed 's/tag = "\([^"]*\)"/\1/')
+        if [ -n "$tag" ]; then
+            echo "Found in $file:"
+            echo "  Tag: $tag"
+            found_tags="$tag"
+        fi
+    done
+
+    if [ -z "$found_tags" ]; then
+        echo -e "${YELLOW}No aztec-packages tags found.${NC}"
+        echo "Using default: devnet"
+        return
+    fi
+
+    echo ""
+
+    # Determine version from tag
+    if echo "$found_tags" | grep -q "devnet"; then
+        echo -e "Detected version: ${GREEN}devnet${NC}"
         echo ""
-        echo "Git branch: $(git rev-parse --abbrev-ref HEAD)"
+        read -p "Set plugin to devnet? [Y/n] " confirm
+        if [ "$confirm" != "n" ] && [ "$confirm" != "N" ]; then
+            set_version "devnet"
+        fi
+    elif echo "$found_tags" | grep -qE "v0\.(8[7-9]|9[0-9])\."; then
+        echo -e "Detected version: ${GREEN}devnet${NC} (v0.87+)"
+        echo ""
+        read -p "Set plugin to devnet? [Y/n] " confirm
+        if [ "$confirm" != "n" ] && [ "$confirm" != "N" ]; then
+            set_version "devnet"
+        fi
+    elif echo "$found_tags" | grep -qE "v0\.(8[0-6])\."; then
+        echo -e "Detected version: ${GREEN}testnet${NC}"
+        echo ""
+        read -p "Set plugin to testnet? [Y/n] " confirm
+        if [ "$confirm" != "n" ] && [ "$confirm" != "N" ]; then
+            set_version "testnet"
+        fi
+    elif echo "$found_tags" | grep -qE "v1\."; then
+        echo -e "Detected version: ${GREEN}mainnet${NC}"
+        echo ""
+        read -p "Set plugin to mainnet? [Y/n] " confirm
+        if [ "$confirm" != "n" ] && [ "$confirm" != "N" ]; then
+            set_version "mainnet"
+        fi
+    else
+        echo -e "${YELLOW}Unknown version pattern.${NC}"
+        echo "Tag: $found_tags"
+        echo "Using default: devnet"
     fi
 }
 
@@ -137,14 +184,17 @@ case "${1:-}" in
     "status"|"--status"|"-s")
         show_status
         ;;
+    "detect"|"--detect"|"-d")
+        detect_version
+        ;;
     "help"|"--help"|"-h")
         print_usage
         ;;
     *)
-        if validate_network "$1"; then
-            switch_network "$1"
+        if validate_version "$1"; then
+            set_version "$1"
         else
-            echo -e "${RED}Error: Unknown network '$1'${NC}"
+            echo -e "${RED}Error: Unknown version '$1'${NC}"
             echo ""
             print_usage
             exit 1
