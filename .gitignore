@@ -1,5 +1,5 @@
 # Local configuration
-network.json
+.aztec-version
 
 # Claude Code local settings
 .claude/settings.local.json

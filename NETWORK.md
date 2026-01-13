@@ -1,66 +1,91 @@
-# Network Versions
+# Version Support
 
-This plugin supports multiple Aztec network versions. Each network may have different syntax, APIs, and patterns.
+This plugin supports multiple Aztec versions within a single installation. No git branches or switching required.
 
-## Available Networks
+## Available Versions
 
-### mainnet
-- **Status**: Stable production release
-- **Aztec Version**: Latest stable
-- **Use when**: Deploying to production, building for mainnet users
+### devnet (Default)
+- **Status**: Active development
+- **Tag Pattern**: `aztec-packages-v*-devnet*` or `v0.87+`
+- **Use when**: New development, experimenting with latest features
+- **Syntax reference**: `versions/devnet/syntax.md`
 
 ### testnet
 - **Status**: Pre-release testing
-- **Aztec Version**: Release candidate
-- **Use when**: Testing before mainnet deployment, integration testing
+- **Tag Pattern**: `aztec-packages-v0.8[0-6]*`
+- **Use when**: Integration testing, pre-production validation
+- **Syntax reference**: `versions/testnet/syntax.md`
 
-### devnet
-- **Status**: Active development
-- **Aztec Version**: Latest development build
-- **Use when**: Experimenting with new features, contributing to Aztec
+### mainnet
+- **Status**: Future stable release
+- **Tag Pattern**: `aztec-packages-v1.*`
+- **Use when**: Production deployments (when available)
+- **Syntax reference**: `versions/mainnet/syntax.md`
 
-## Switching Networks
+## Version Detection
 
-```bash
-# Switch to testnet
-./setup.sh testnet
+The plugin auto-detects your project's version from `Nargo.toml`:
 
-# Switch to devnet
-./setup.sh devnet
-
-# Check current network
-./setup.sh status
+```toml
+[dependencies]
+aztec = { git = "...", tag = "aztec-packages-v0.87.4-devnet.0", directory = "..." }
 ```
 
-## Version Differences
+### Manual Selection
 
-### Syntax Changes by Version
+```bash
+./setup.sh devnet    # Use devnet syntax
+./setup.sh testnet   # Use testnet syntax
+./setup.sh mainnet   # Use mainnet syntax
+./setup.sh status    # Show current version
+./setup.sh detect    # Auto-detect from project
+```
 
-Each branch contains version-specific documentation in `CLAUDE.md` and the skills/commands directories. Key areas that may differ:
+### Using /aztec:detect-version
 
-| Feature | mainnet | testnet | devnet |
-|---------|---------|---------|--------|
-| Note delivery | `.deliver()` | `.deliver()` | `.deliver(MessageDelivery.*)` |
-| Storage patterns | `Map<>` | `Map<>` | `Owned<>` |
-| Function attributes | `#[aztec(private)]` | `#[external("private")]` | `#[external("private")]` |
+Run the slash command to scan your project and report the detected version with syntax details.
 
-> **Note**: This table is illustrative. Check the branch-specific `CLAUDE.md` for accurate syntax.
+## Syntax Differences by Version
 
-## Branch Management
+| Feature | devnet | testnet | mainnet |
+|---------|--------|---------|---------|
+| Function attributes | `#[external("private")]` | `#[external("private")]` | TBD |
+| Storage wrapping | `Owned<PrivateSet<>>` | `Owned<PrivateSet<>>` | TBD |
+| Note delivery | `MessageDelivery::CONSTRAINED_ONCHAIN` | `MessageDelivery::CONSTRAINED_ONCHAIN` | TBD |
 
-When updating the plugin for a new Aztec release:
+> **Note**: Mainnet syntax will be documented when mainnet launches. See `versions/<version>/syntax.md` for complete syntax references.
 
-1. Create/update the appropriate branch
-2. Update `CLAUDE.md` with new syntax
-3. Update skills and commands as needed
-4. Test with the target network
-5. Tag the release (e.g., `testnet-v0.87.0`)
+## Version Files
 
-## Compatibility
+```
+versions/
+├── versions.json          # Version patterns and metadata
+├── devnet/
+│   └── syntax.md          # Complete devnet syntax reference
+├── testnet/
+│   └── syntax.md          # Complete testnet syntax reference
+└── mainnet/
+    └── syntax.md          # Mainnet syntax (placeholder)
+```
 
-The plugin attempts to use syntax compatible with:
-- **mainnet**: aztec-packages stable releases
-- **testnet**: aztec-packages release candidates
-- **devnet**: aztec-packages master branch
+## Configuration
+
+The active version is stored in `.aztec-version`:
+
+```json
+{
+  "version": "devnet",
+  "setAt": "2025-01-13T00:00:00Z",
+  "note": "Plugin configured for devnet syntax."
+}
+```
+
+This file is created by `./setup.sh` and can be committed to your project to share version settings with your team.
+
+## Compatibility Notes
+
+- **Default behavior**: Uses devnet syntax if no version detected
+- **Version mismatch**: Claude will warn if multiple Nargo.toml files have different versions
+- **Unknown versions**: Falls back to devnet with a warning
 
 Always verify against the [official Aztec documentation](https://docs.aztec.network) for your target version.

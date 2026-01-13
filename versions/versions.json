@@ -1,0 +1,38 @@
+{
+  "default": "devnet",
+  "versions": {
+    "devnet": {
+      "name": "devnet",
+      "description": "Latest development version (default)",
+      "tagPatterns": [
+        "aztec-packages-v[0-9.]+-devnet",
+        "aztec-packages-v0\\.(8[7-9]|9[0-9])\\."
+      ],
+      "exampleTag": "aztec-packages-v0.87.4-devnet.0",
+      "notes": "Current active development. May have breaking changes."
+    },
+    "testnet": {
+      "name": "testnet",
+      "description": "Pre-release testing version",
+      "tagPatterns": [
+        "aztec-packages-v0\\.(8[0-6])\\."
+      ],
+      "exampleTag": "aztec-packages-v0.85.0",
+      "notes": "Release candidates for testnet deployment."
+    },
+    "mainnet": {
+      "name": "mainnet",
+      "description": "Stable production release (future)",
+      "tagPatterns": [
+        "aztec-packages-v1\\."
+      ],
+      "exampleTag": "aztec-packages-v1.0.0",
+      "notes": "Stable syntax for production. Not yet available."
+    }
+  },
+  "detection": {
+    "files": ["Nargo.toml", "contracts/*/Nargo.toml", "*/Nargo.toml"],
+    "searchPattern": "aztec.*tag.*=.*\"(aztec-packages-v[^\"]+)\"",
+    "fallback": "devnet"
+  }
+}

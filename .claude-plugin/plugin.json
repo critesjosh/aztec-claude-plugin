@@ -1,7 +1,7 @@
 {
   "name": "aztec",
-  "version": "1.0.0",
-  "description": "Claude Code plugin for Aztec smart contract and application development. Provides specialized agents, skills, and commands for building privacy-preserving applications on Aztec Network.",
+  "version": "2.0.0",
+  "description": "Claude Code plugin for Aztec smart contract and application development. Supports multiple Aztec versions (devnet, testnet, mainnet) with auto-detection from Nargo.toml.",
   "author": {
     "name": "critesjosh"
   },
@@ -12,10 +12,15 @@
     "privacy",
     "zk-rollup",
     "blockchain",
-    "web3"
+    "web3",
+    "multi-version"
   ],
   "license": "MIT",
   "repository": "https://github.com/critesjosh/aztec-claude-plugin",
+  "config": {
+    "defaultVersion": "devnet",
+    "supportedVersions": ["devnet", "testnet", "mainnet"]
+  },
   "mcpServers": {
     "context7": {
       "command": "npx",

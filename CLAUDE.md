@@ -2,6 +2,42 @@
 
 This project uses the Aztec Network for privacy-preserving smart contract development. Follow these guidelines when working with Aztec contracts and applications.
 
+## Version Detection
+
+This plugin supports multiple Aztec versions. **Default: devnet** (latest development).
+
+### Detecting Project Version
+
+When working with a user's Aztec project, detect their version:
+
+1. **Check for `.aztec-version`** file in project root (manual override)
+2. **Parse `Nargo.toml`** for the `aztec` dependency tag:
+   ```toml
+   aztec = { git = "...", tag = "aztec-packages-v0.87.4-devnet.0", ... }
+   ```
+3. **Match against version patterns** in `versions/versions.json`
+4. **Default to devnet** if no version detected
+
+### Supported Versions
+
+| Version | Tag Pattern | Status |
+|---------|-------------|--------|
+| devnet | `aztec-packages-v*-devnet*` or `v0.87+` | Default, active development |
+| testnet | `aztec-packages-v0.8[0-6]*` | Pre-release testing |
+| mainnet | `aztec-packages-v1.*` | Future stable release |
+
+### Version-Specific Syntax
+
+See `versions/<version>/syntax.md` for version-specific syntax reference. Key differences:
+- **Function attributes**: May vary between versions
+- **Storage patterns**: `Owned<>` wrapper requirements
+- **Note delivery**: `MessageDelivery` options
+
+When generating code, include a comment noting the target version:
+```rust
+// Target: Aztec devnet (aztec-packages-v0.87.x)
+```
+
 ## Technology Stack
 
 - **Noir**: Domain-specific language for writing Aztec smart contracts
@@ -265,9 +301,13 @@ name = "my_contract"
 type = "contract"
 
 [dependencies]
-aztec = { git = "https://github.com/AztecProtocol/aztec-packages/", tag = "aztec-packages-v0.XX.X", directory = "noir-projects/aztec-nr/aztec" }
-value_note = { git = "https://github.com/AztecProtocol/aztec-packages/", tag = "aztec-packages-v0.XX.X", directory = "noir-projects/aztec-nr/value-note" }
+# Use the same tag for all aztec-packages dependencies
+# Check https://github.com/AztecProtocol/aztec-packages/tags for latest
+aztec = { git = "https://github.com/AztecProtocol/aztec-packages/", tag = "aztec-packages-v0.87.4-devnet.0", directory = "noir-projects/aztec-nr/aztec" }
+value_note = { git = "https://github.com/AztecProtocol/aztec-packages/", tag = "aztec-packages-v0.87.4-devnet.0", directory = "noir-projects/aztec-nr/value-note" }
 ```
+
+**Important**: Match the tag to your target network version. See `versions/versions.json` for version patterns.
 
 ## Looking Up Latest Documentation
 
