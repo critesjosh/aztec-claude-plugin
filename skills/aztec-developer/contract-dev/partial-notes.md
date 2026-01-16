@@ -14,28 +14,35 @@ The answer: The recipient creates an *incomplete* note commitment in private (co
 
 ## Flow
 
-1. **Private phase**: Create partial note with `Note::partial(owner, storage_slot, context)` → returns `PartialNote`
-2. **Pass to public**: The `PartialNote` is passed as an argument to an enqueued public call
-3. **Public phase**: Complete with `partial_note.complete(context, completer, amount)` or `partial_note.complete_from_private(...)`
+1. **Private phase**: Create partial note commitment (contains recipient identity, randomness, storage slot—but NOT the amount)
+2. **Pass to public**: The partial note is passed as an argument to an enqueued public call
+3. **Public phase**: Complete the note by adding the amount
 4. **Note discovery**: Recipient's PXE matches the encrypted partial note log with the public completion log
 
-## API
+## Example: Token Contract Pattern
+
+The token contract provides high-level functions for partial notes:
 
 ```rust
-// In private: create partial note
-let partial_note = UintNote::partial(
-    to,                                    // recipient
-    storage.balances.at(to).set.storage_slot,  // storage slot
-    context,
-);
+// In private: prepare the partial note
+let partial_note = self.call(Token::at(token_address).prepare_private_balance_increase());
 
-// Pass partial_note to public function...
-
-// In public: complete the note
-partial_note.complete(context, completer, amount);
+// Enqueue public call that will complete the note
+self.enqueue(Token::at(token_address).finalize_transfer_to_private(amount, partial_note));
 ```
 
-The `completer` is an address authorized to finalize the note—typically the same as `from` (the account whose balance is being reduced).
+For a complete public→private transfer in a single call:
+
+```rust
+#[external("private")]
+fn transfer_to_private(to: AztecAddress, amount: u64) {
+    let from = self.msg_sender().unwrap();
+    // Deduct from public balance and complete partial note in one flow
+    self.enqueue_self._transfer_to_private(from, to, amount);
+}
+```
+
+See the `token_contract` source for the full implementation of `prepare_private_balance_increase` and `finalize_transfer_to_private`.
 
 ## Reference
 `token_contract` - `transfer_to_private`, `prepare_private_balance_increase`, `finalize_transfer_to_private`
