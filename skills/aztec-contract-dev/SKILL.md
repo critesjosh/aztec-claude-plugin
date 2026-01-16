@@ -145,7 +145,7 @@ fn transfer(to: AztecAddress, amount: u128) {
 ```rust
 #[external("public")]
 fn set_config(new_value: Field) {
-    assert(self.msg_sender() == storage.admin.read(), "Unauthorized");
+    assert(self.msg_sender().unwrap() == self.storage.admin.read(), "Unauthorized");
     self.storage.config.write(new_value);
 }
 ```
@@ -163,7 +163,7 @@ fn shield(amount: u128) {
 #[external("public")]
 #[only_self]
 fn _burn_public(from: AztecAddress, amount: Field) {
-    let balance = storage.public_balances.at(from).read();
+    let balance = self.storage.public_balances.at(from).read();
     assert(balance >= amount, "Insufficient balance");
     self.storage.public_balances.at(from).write(balance - amount);
 }

@@ -8,47 +8,57 @@ Private and public are **two separate execution phases**, not just access modifi
 This is why private can't get return values from public (it hasn't run yet) and public can't call private (it already finished).
 
 ## Syntax
-Cross-contract and inter-contract calls use the **same interface**:
+Cross-contract calls use `self.call()`, `self.enqueue()`, etc.:
 
 ```rust
-ContractName::at(address).function_name(args).<method>(&mut context)
-// For self-calls: ContractName::at(self.address)
+// Call another contract
+self.call(ContractName::at(address).function_name(args));
+
+// For self-calls, use shorthand
+self.enqueue_self.my_public_function(args);
 ```
 
 ## Call Methods
 
-### `.call()`
+### `self.call()`
 Same-domain immediate execution (private→private or public→public):
 ```rust
-Token::at(token_addr).transfer(to, amount).call();
+self.call(Token::at(token_addr).transfer(to, amount));
 ```
 
-### `.enqueue()`
+### `self.enqueue()`
 Private queues public call for later execution:
 ```rust
 #[external("private")]
 fn transfer_to_public(to: AztecAddress, amount: u128) {
-    self.storage.balances.at(from).sub(from, amount);
-    MyContract::at(self.address)._increase_public_balance(to, amount).enqueue();
+    let from = self.msg_sender().unwrap();
+    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery::CONSTRAINED_ONCHAIN);
+    self.enqueue(MyContract::at(self.address)._increase_public_balance(to, amount));
 }
 
 #[external("public")]
 #[internal]
 fn _increase_public_balance(to: AztecAddress, amount: u128) {
-    self.storage.public_balances.at(to).write(storage.public_balances.at(to).read() + amount);
+    let current = self.storage.public_balances.at(to).read();
+    self.storage.public_balances.at(to).write(current + amount);
 }
 ```
 
-### `.view()`
-Read-only call (works in both contexts):
+For self-calls, use shorthand:
 ```rust
-let balance = Token::at(token_addr).balance_of_public(owner).view();
+self.enqueue_self._increase_public_balance(to, amount);
 ```
 
-### `.set_as_teardown()`
-For fee payment - executes after all public calls when `context.transaction_fee()` is known:
+### `self.call_view()`
+Read-only call (works in both contexts):
 ```rust
-FPC::at(self.address)._complete_refund(token, partial_note, max_fee).set_as_teardown();
+let balance = self.call_view(Token::at(token_addr).balance_of_public(owner));
+```
+
+### `self.set_as_teardown()`
+For fee payment - executes after all public calls when transaction fee is known:
+```rust
+self.set_as_teardown(FPC::at(self.address)._complete_refund(token, partial_note, max_fee));
 ```
 
 ## Reference
