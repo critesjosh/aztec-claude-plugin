@@ -123,3 +123,17 @@ fn _burn_public(from: AztecAddress, amount: Field) {
     self.storage.public_balances.at(from).write(balance - amount);
 }
 ```
+
+## Using Context7 for Examples
+
+When you need working contract examples or implementation patterns, query Context7:
+
+```
+# ALWAYS check aztec-examples first for contract patterns
+query-docs: libraryId="/aztecprotocol/aztec-examples", query="<specific pattern>"
+
+# For official docs
+query-docs: libraryId="/websites/aztec_network", query="<question>"
+```
+
+The `/aztecprotocol/aztec-examples` library contains 284 working code snippets covering common contract patterns, token implementations, and Aztec-specific features.

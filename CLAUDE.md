@@ -275,24 +275,27 @@ This plugin includes the Context7 MCP server for fetching up-to-date Aztec docum
 - You need the latest API details that may have changed
 - The user asks about features not covered in this guide
 - You want to verify syntax or patterns are current
+- You need working example contracts to reference
 
 **How to use Context7 for Aztec:**
 
 ```
-# For official Aztec docs (recommended for most queries)
-resolve-library-id: libraryName="aztec", query="<your question>"
-# Returns: /websites/aztec_network
+# For example contracts (RECOMMENDED for learning patterns)
+query-docs: libraryId="/aztecprotocol/aztec-examples", query="<specific pattern or contract type>"
 
-# Then query:
+# For official Aztec docs
 query-docs: libraryId="/websites/aztec_network", query="<specific question>"
 
-# For monorepo source code and examples
+# For monorepo source code and implementation details
 query-docs: libraryId="/aztecprotocol/aztec-packages", query="<specific question>"
 ```
 
 **When to use which source:**
+- `/aztecprotocol/aztec-examples` - **Example contracts and sample code (284 snippets)** - Use this FIRST when looking for contract patterns, implementations, or learning how to build specific features
 - `/websites/aztec_network` - Official docs, tutorials, guides (7k+ snippets)
 - `/aztecprotocol/aztec-packages` - Source code, implementation details (27k+ snippets)
+
+**IMPORTANT:** When a user asks for examples, sample code, or "how do I implement X", always query `/aztecprotocol/aztec-examples` first before other sources.
 
 ## Useful Resources
 

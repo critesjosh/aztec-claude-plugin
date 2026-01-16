@@ -34,10 +34,21 @@ See [TXE Setup](./txe/setup.md) to configure your test environment, then:
 
 ## Using Context7 MCP
 
-For detailed API documentation and code examples beyond what's covered here, use the Context7 MCP tool to query the Aztec documentation:
+For detailed API documentation and code examples beyond what's covered here, use the Context7 MCP tools:
 
+**For example contracts (use this FIRST for patterns and implementations):**
 ```
-Library ID: /aztecprotocol/aztec-packages
+query-docs: libraryId="/aztecprotocol/aztec-examples", query="<your specific pattern>"
 ```
 
-This provides access to the latest Aztec.nr API, contract examples, and implementation details.
+**For official documentation:**
+```
+query-docs: libraryId="/websites/aztec_network", query="<your question>"
+```
+
+**For monorepo source code and implementation details:**
+```
+query-docs: libraryId="/aztecprotocol/aztec-packages", query="<your question>"
+```
+
+Always query `/aztecprotocol/aztec-examples` first when looking for working contract examples or implementation patterns.
