@@ -241,6 +241,34 @@ fn owner_action() {
 5. **Consider timing attacks** - Public state reads in private can leak information
 6. **Test thoroughly** - Both unit tests and integration tests
 
+### ⚠️ Critical: Note Ownership Constraints
+
+**Only the owner of a note can nullify (spend/replace/delete) it.**
+
+This is a common source of design bugs. Key rules:
+
+- **Fields on notes are just data, not permissions** - Storing a `sender` address on a note does NOT allow the sender to modify that note
+- **Notes are encrypted for the owner** - Non-owners cannot even see the note contents
+- **If you need multi-party access** - Use public storage instead of notes
+
+**Anti-Pattern (BROKEN):**
+```rust
+// Sender CANNOT actually cancel this - they don't own the note!
+#[note]
+struct StreamNote {
+    sender: AztecAddress,  // This is just DATA, not a permission
+    owner: AztecAddress,   // Only THIS address can nullify
+}
+```
+
+**Correct Pattern:**
+```rust
+// Use public storage when multiple parties need access
+streams: Map<Field, PublicMutable<StreamData, Context>, Context>,
+```
+
+See [Notes Pattern](./skills/aztec-developer/contract-dev/notes.md) for detailed guidance.
+
 ## Project Structure
 
 ```
