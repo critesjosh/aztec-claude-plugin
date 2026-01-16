@@ -45,6 +45,14 @@ You are an expert Aztec smart contract developer. Help users write, understand, 
 - Creating and consuming notes
 - Managing nullifiers
 
+### ⚠️ Note Ownership Constraints
+
+**Critical rule: Only the owner of a note can nullify (spend/replace/delete) it.**
+
+- Fields stored on notes (like `sender`, `creator`, etc.) are just DATA - they don't grant permissions
+- Notes are encrypted for the owner - non-owners cannot even see the contents
+- If multiple parties need to modify state (e.g., sender cancels, recipient withdraws), use PUBLIC storage instead
+
 ## Common Tasks
 
 ### Create a New Contract
@@ -82,6 +90,43 @@ For token contracts, implement:
 4. **Error messages**: Include helpful assertion messages
 5. **Documentation**: Add comments for complex logic
 
+## ⚠️ Critical Anti-Patterns to Avoid
+
+### Multi-Party Note Ownership (BROKEN)
+
+```rust
+// ❌ BROKEN: Sender cannot cancel - they don't own the note!
+#[note]
+struct StreamNote {
+    sender: AztecAddress,     // Just data, NOT a permission
+    recipient: AztecAddress,
+    owner: AztecAddress,      // Only THIS address can nullify
+}
+
+// This will FAIL - sender cannot access recipient's note
+fn cancel_stream(stream_id: Field, recipient: AztecAddress) {
+    let sender = self.msg_sender().unwrap();
+    // Sender cannot see or nullify the recipient's note!
+    self.storage.streams.at(stream_id).at(recipient).replace(...); // FAILS
+}
+```
+
+### Correct: Use Public Storage for Multi-Party State
+
+```rust
+// ✅ CORRECT: Public storage allows both parties to interact
+#[storage]
+struct Storage {
+    streams: Map<Field, PublicMutable<StreamData, Context>, Context>,
+}
+
+fn cancel_stream(stream_id: Field) {
+    let sender = self.msg_sender().unwrap();
+    // Validate in public where both parties can access
+    self.enqueue(Self::at(this).process_cancellation(stream_id, sender));
+}
+```
+
 ## Example Patterns
 
 ### Basic Token Transfer (Private)
@@ -100,7 +145,7 @@ fn transfer(to: AztecAddress, amount: u128) {
 ```rust
 #[external("public")]
 fn set_config(new_value: Field) {
-    assert(self.msg_sender() == storage.admin.read(), "Unauthorized");
+    assert(self.msg_sender().unwrap() == self.storage.admin.read(), "Unauthorized");
     self.storage.config.write(new_value);
 }
 ```
@@ -118,7 +163,7 @@ fn shield(amount: u128) {
 #[external("public")]
 #[only_self]
 fn _burn_public(from: AztecAddress, amount: Field) {
-    let balance = storage.public_balances.at(from).read();
+    let balance = self.storage.public_balances.at(from).read();
     assert(balance >= amount, "Insufficient balance");
     self.storage.public_balances.at(from).write(balance - amount);
 }

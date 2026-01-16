@@ -28,8 +28,8 @@ Simplest way to add authwit checks. Specify which param is the "on behalf of" ad
 fn transfer_in_private(from: AztecAddress, to: AztecAddress, amount: u128, authwit_nonce: Field) {
     // If msg_sender != from, macro automatically validates authwit
     // The authwit is consumed (nullifier emitted) so it can't be reused
-    self.storage.balances.at(from).sub(from, amount);
-    self.storage.balances.at(to).add(to, amount);
+    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery::CONSTRAINED_ONCHAIN);
+    self.storage.balances.at(to).add(amount).deliver(MessageDelivery::CONSTRAINED_ONCHAIN);
 }
 ```
 
