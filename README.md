@@ -2,7 +2,7 @@
 
 A Claude Code plugin for Aztec smart contract and application development. This plugin provides specialized agents, skills, and commands to help you build privacy-preserving applications on the Aztec Network.
 
-⚠️ This plugin is currently set up to run on v3.0.0-devnet.20251212
+⚠️ This plugin is currently set up to run on v3.0.0-devnet.6-patch.1
 
 ## Installation
 
