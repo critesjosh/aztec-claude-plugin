@@ -184,7 +184,7 @@ const config = {
 
 ```typescript
 const config = {
-    nodeUrl: 'https://next.devnet.aztec-labs.com',
+    nodeUrl: 'https://devnet-6.aztec-labs.com',
     proverEnabled: true,
     timeouts: {
         deployTimeout: 1200000,  // 20 min

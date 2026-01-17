@@ -17,7 +17,7 @@ Configure your Aztec project for different deployment targets.
   },
   "settings": {
     "skipLocalNetwork": false,
-    "version": "3.0.0-devnet.20251212"
+    "version": "3.0.0-devnet.6-patch.1"
   },
   "timeouts": {
     "deployTimeout": 120000,
@@ -34,13 +34,13 @@ Configure your Aztec project for different deployment targets.
   "name": "devnet",
   "environment": "devnet",
   "network": {
-    "nodeUrl": "https://next.devnet.aztec-labs.com",
+    "nodeUrl": "https://devnet-6.aztec-labs.com",
     "l1RpcUrl": "https://sepolia.infura.io/v3/YOUR_KEY",
     "l1ChainId": 11155111
   },
   "settings": {
     "skipLocalNetwork": true,
-    "version": "3.0.0-devnet.20251212"
+    "version": "3.0.0-devnet.6-patch.1"
   },
   "timeouts": {
     "deployTimeout": 1200000,
@@ -235,7 +235,7 @@ import { getTimeouts } from '../config/config.js';
 bash -i <(curl -s https://install.aztec.network)
 
 # Set version and update
-export VERSION=3.0.0-devnet.20251212
+export VERSION=3.0.0-devnet.6-patch.1
 aztec-up
 
 # Start local network
