@@ -12,7 +12,7 @@
         "repo": "critesjosh/aztec-claude-plugin"
       },
       "description": "Claude Code plugin for Aztec smart contract and application development",
-      "version": "1.2.0"
+      "version": "1.3.0"
     }
   ]
 }

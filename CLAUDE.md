@@ -308,6 +308,9 @@ This plugin includes the Context7 MCP server for fetching up-to-date Aztec docum
 **How to use Context7 for Aztec:**
 
 ```
+# For reference implementations of common tasks (deployment, testing, TypeScript client)
+query-docs: libraryId="/aztecprotocol/aztec-starter", query="<deployment, testing, or TypeScript patterns>"
+
 # For example contracts (RECOMMENDED for learning patterns)
 query-docs: libraryId="/aztecprotocol/aztec-examples", query="<specific pattern or contract type>"
 
@@ -319,6 +322,7 @@ query-docs: libraryId="/aztecprotocol/aztec-packages", query="<specific question
 ```
 
 **When to use which source:**
+- `/aztecprotocol/aztec-starter` - **Reference implementations (53 snippets)** - Use for examples of deployment scripts, integration tests, TypeScript client code, devnet configuration, and other common development tasks
 - `/aztecprotocol/aztec-examples` - **Example contracts and sample code (284 snippets)** - Use this FIRST when looking for contract patterns, implementations, or learning how to build specific features
 - `/websites/aztec_network` - Official docs, tutorials, guides (7k+ snippets)
 - `/aztecprotocol/aztec-packages` - Source code, implementation details (27k+ snippets)

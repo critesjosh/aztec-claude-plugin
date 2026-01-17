@@ -174,6 +174,9 @@ fn _burn_public(from: AztecAddress, amount: Field) {
 When you need working contract examples or implementation patterns, query Context7:
 
 ```
+# For reference implementations (deployment, testing, TypeScript client)
+query-docs: libraryId="/aztecprotocol/aztec-starter", query="<deployment, integration tests, or TypeScript>"
+
 # ALWAYS check aztec-examples first for contract patterns
 query-docs: libraryId="/aztecprotocol/aztec-examples", query="<specific pattern>"
 
@@ -181,4 +184,7 @@ query-docs: libraryId="/aztecprotocol/aztec-examples", query="<specific pattern>
 query-docs: libraryId="/websites/aztec_network", query="<question>"
 ```
 
-The `/aztecprotocol/aztec-examples` library contains 284 working code snippets covering common contract patterns, token implementations, and Aztec-specific features.
+**When to use which source:**
+- `/aztecprotocol/aztec-starter` - Reference implementations of deployment scripts, integration tests, TypeScript client code
+- `/aztecprotocol/aztec-examples` - Working contract examples (284 snippets) - use FIRST for contract patterns
+- `/websites/aztec_network` - Official documentation and tutorials

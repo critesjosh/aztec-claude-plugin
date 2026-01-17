@@ -84,8 +84,14 @@ import { Logger, createLogger } from "@aztec/aztec.js/log";
 
 ## Using Context7 MCP
 
-For detailed API documentation and latest deployment patterns, use Context7:
+For detailed API documentation and deployment patterns, use Context7:
 
 ```
-Library ID: /aztecprotocol/aztec-packages
+# For reference deployment scripts and devnet configuration
+query-docs: libraryId="/aztecprotocol/aztec-starter", query="deployment scripts"
+
+# For monorepo source and API details
+query-docs: libraryId="/aztecprotocol/aztec-packages", query="<deployment question>"
 ```
+
+The `/aztecprotocol/aztec-starter` library has reference implementations of deployment scripts, devnet configuration, and integration test patterns.

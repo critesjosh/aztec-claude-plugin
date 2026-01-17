@@ -36,6 +36,11 @@ See [TXE Setup](./txe/setup.md) to configure your test environment, then:
 
 For detailed API documentation and code examples beyond what's covered here, use the Context7 MCP tools:
 
+**For reference implementations of common tasks:**
+```
+query-docs: libraryId="/aztecprotocol/aztec-starter", query="<deployment, testing, or TypeScript patterns>"
+```
+
 **For example contracts (use this FIRST for patterns and implementations):**
 ```
 query-docs: libraryId="/aztecprotocol/aztec-examples", query="<your specific pattern>"
@@ -51,4 +56,8 @@ query-docs: libraryId="/websites/aztec_network", query="<your question>"
 query-docs: libraryId="/aztecprotocol/aztec-packages", query="<your question>"
 ```
 
-Always query `/aztecprotocol/aztec-examples` first when looking for working contract examples or implementation patterns.
+**When to use which source:**
+- `/aztecprotocol/aztec-starter` - Reference implementations of deployment scripts, integration tests, TypeScript client code, devnet configuration
+- `/aztecprotocol/aztec-examples` - Working contract examples and implementation patterns (query this FIRST for contract code)
+- `/websites/aztec_network` - Official docs, tutorials, guides
+- `/aztecprotocol/aztec-packages` - Monorepo source code, implementation details
