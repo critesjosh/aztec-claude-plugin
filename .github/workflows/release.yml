@@ -46,6 +46,24 @@ jobs:
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version in plugin.json: $CURRENT_VERSION"
 
+      - name: Check plugin.json and marketplace.json are in sync
+        if: github.event_name == 'push'
+        run: |
+          PLUGIN_VERSION=$(jq -r '.version' .claude-plugin/plugin.json)
+          MARKETPLACE_VERSION=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
+
+          echo "plugin.json version: $PLUGIN_VERSION"
+          echo "marketplace.json version: $MARKETPLACE_VERSION"
+
+          if [ "$PLUGIN_VERSION" != "$MARKETPLACE_VERSION" ]; then
+            echo "::error::Version mismatch! plugin.json ($PLUGIN_VERSION) != marketplace.json ($MARKETPLACE_VERSION)"
+            echo ""
+            echo "Please ensure both files have the same version."
+            exit 1
+          fi
+
+          echo "Versions are in sync"
+
       - name: Check if tag already exists
         id: check_tag
         run: |
