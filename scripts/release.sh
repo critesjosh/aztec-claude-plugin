@@ -13,8 +13,21 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 cd "$PROJECT_ROOT"
 
+# Check versions are in sync
+PLUGIN_VERSION=$(jq -r '.version' .claude-plugin/plugin.json)
+MARKETPLACE_VERSION=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
+
+if [ "$PLUGIN_VERSION" != "$MARKETPLACE_VERSION" ]; then
+  echo -e "${RED}Version mismatch!${NC}"
+  echo "  plugin.json:      $PLUGIN_VERSION"
+  echo "  marketplace.json: $MARKETPLACE_VERSION"
+  echo ""
+  echo "Please sync the versions before releasing."
+  exit 1
+fi
+
 # Get current version
-CURRENT_VERSION=$(jq -r '.version' .claude-plugin/plugin.json)
+CURRENT_VERSION="$PLUGIN_VERSION"
 echo -e "${YELLOW}Current version: ${CURRENT_VERSION}${NC}"
 
 # Parse current version
