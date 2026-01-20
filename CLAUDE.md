@@ -9,6 +9,46 @@ This project uses the Aztec Network for privacy-preserving smart contract develo
 - **aztec-cli**: Command-line tool for deployment and interaction
 - **PXE (Private Execution Environment)**: Client-side execution for private functions
 
+## ⚠️ Critical: Aztec ≠ Solidity
+
+**If you're coming from Solidity, unlearn these assumptions:**
+
+| Solidity Concept | Aztec Equivalent | Key Difference |
+|------------------|------------------|----------------|
+| Storage slots | **Notes** | Private state is encrypted UTXOs, not contract storage |
+| Reentrancy guards | **Nullifiers** | Notes are consumed (nullified) to prevent double-spend |
+| `msg.sender` for auth | **Account contracts** | Auth logic lives in the user's account contract, not the app |
+| One tx = one proof | **Proof composition** | Private functions can call other private functions in one proof |
+
+### Private State = Notes (Not Storage)
+
+In Solidity, you read/write storage slots. In Aztec, private state uses **notes**:
+- Notes are encrypted, off-chain data that only the owner can decrypt
+- To "update" private state, you consume (nullify) the old note and create a new one
+- You cannot iterate over notes or query them like a database
+
+### Nullifiers Prevent Double-Spend (Not Reentrancy)
+
+Nullifiers are unique identifiers computed from notes:
+- When you spend a note, its nullifier is published on-chain
+- The protocol rejects any transaction that reuses a nullifier
+- This prevents double-spending, similar to how Bitcoin prevents spending the same UTXO twice
+
+### Account Contracts Handle Auth (Not msg.sender)
+
+In Aztec, `msg.sender` exists but auth works differently:
+- Users deploy their own **account contract** that defines their auth rules
+- The account contract validates signatures, multisig, social recovery, etc.
+- App contracts call `context.msg_sender()` but the actual auth happened in the account contract
+- This means apps don't need to implement signature verification—accounts handle it
+
+### Private-to-Private Calls Compose in One Proof
+
+Unlike Solidity's external calls:
+- A private function calling another private function happens in the **same client-side proof**
+- No separate transaction or on-chain interaction needed
+- The PXE composes all private calls into one proof before submission
+
 ## Contract Structure
 
 ### Basic Contract Template
