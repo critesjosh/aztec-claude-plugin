@@ -32,12 +32,12 @@ Private queues public call for later execution:
 #[external("private")]
 fn transfer_to_public(to: AztecAddress, amount: u128) {
     let from = self.msg_sender().unwrap();
-    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery::CONSTRAINED_ONCHAIN);
+    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
     self.enqueue(MyContract::at(self.address)._increase_public_balance(to, amount));
 }
 
 #[external("public")]
-#[internal]
+#[only_self]
 fn _increase_public_balance(to: AztecAddress, amount: u128) {
     let current = self.storage.public_balances.at(to).read();
     self.storage.public_balances.at(to).write(current + amount);

@@ -3,13 +3,13 @@
 ## Basic Template
 
 ```rust
-use dep::aztec::macros::aztec;
+use aztec::macros::aztec;
 
 #[aztec]
 pub contract MyContract {
-    use dep::aztec::{
+    use aztec::{
         macros::{
-            functions::{external, initializer, internal, view},
+            functions::{external, initializer, only_self, view},
             storage::storage,
         },
         protocol_types::address::AztecAddress,
@@ -94,13 +94,27 @@ unconstrained fn get_balance(owner: AztecAddress) -> u128 {
 }
 ```
 
-### `#[internal]`
-Only callable by the contract itself. Used for private→public patterns.
+### `#[only_self]`
+Only callable by the contract itself via `self.enqueue_self`. Used for private→public patterns.
 ```rust
 #[external("public")]
-#[internal]
+#[only_self]
 fn _increase_balance(to: AztecAddress, amount: u128) {
-    // Only this contract can call this
+    // Only this contract can call this via self.enqueue_self._increase_balance(...)
+}
+```
+
+### `#[internal("private")]` / `#[internal("public")]`
+Inlined helper functions (code inserted at call site, no separate circuit/call). Called via `self.internal.function_name()`.
+```rust
+#[internal("private")]
+fn _prepare_transfer(to: AztecAddress, amount: u128) -> Field {
+    // Helper logic for private functions - inlined at call site
+}
+
+#[internal("public")]
+fn _update_balance(owner: AztecAddress, amount: u128) {
+    // Helper logic for public functions - inlined at call site
 }
 ```
 
@@ -117,11 +131,11 @@ fn get_admin() -> AztecAddress {
 ## Common Imports
 
 ```rust
-use dep::aztec::{
+use aztec::{
     // Macros
     macros::{
         aztec,
-        functions::{external, initializer, internal, view, noinitcheck},
+        functions::{external, initializer, internal, only_self, view, noinitcheck},
         storage::storage,
         events::event,
     },

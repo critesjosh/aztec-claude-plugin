@@ -225,12 +225,12 @@ Use these before creating custom notes:
 
 - **`UintNote`** - Stores a `U128` value with owner. Used by token balances.
 - **`ValueNote`** - Stores a `Field` value with owner. General purpose.
-- **`AddressNote`** - Stores an `AztecAddress`. Used for private address self.storage.
+- **`AddressNote`** - Stores an `AztecAddress`. Used for private address storage.
 
 ```rust
-use dep::aztec::note::uint_note::UintNote;
+use aztec::note::uint_note::UintNote;
 // or
-use dep::value_note::value_note::ValueNote;
+use value_note::value_note::ValueNote;
 ```
 
 ## Defining Custom Notes

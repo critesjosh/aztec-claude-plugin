@@ -23,39 +23,51 @@ Aztec provides a Noir-native testing framework using `TestEnvironment` that allo
 ### Basic Test Structure
 
 ```rust
-use dep::aztec::test::helpers::test_environment::TestEnvironment;
+use aztec::{
+    protocol_types::address::AztecAddress,
+    test::helpers::test_environment::TestEnvironment,
+};
 
 #[test]
-fn test_example() {
+unconstrained fn test_example() {
     // Setup
     let mut env = TestEnvironment::new();
+    let owner = env.create_light_account();
 
     // Deploy
-    let deployer = env.deploy("MyContract");
     let initializer = MyContract::interface().constructor(args);
-    let contract_address = deployer.with_public_initializer(owner, initializer);
+    let contract_address = env.deploy("MyContract").with_public_initializer(owner, initializer);
 
-    // Act
-    let contract = MyContract::at(contract_address);
-    contract.some_function(args).call(&mut env.private());
+    // Act - call private function
+    env.call_private(owner, MyContract::at(contract_address).some_function(args));
 
-    // Assert
-    let result = contract.view_function().call(&mut env.public());
+    // Assert - view public state
+    let result = env.view_public(MyContract::at(contract_address).view_function());
     assert(result == expected);
 }
+```
+
+### Account Types
+
+```rust
+// Light account - fast, limited features (use for most tests)
+let owner = env.create_light_account();
+
+// Contract account - full features including authwit support (slower)
+let owner = env.create_contract_account();
 ```
 
 ### Deployment Options
 
 ```rust
 // Deploy with public initializer
-let address = deployer.with_public_initializer(owner, initializer);
+let address = env.deploy("MyContract").with_public_initializer(owner, initializer);
 
 // Deploy with private initializer
-let address = deployer.with_private_initializer(owner, initializer);
+let address = env.deploy("MyContract").with_private_initializer(owner, initializer);
 
 // Deploy without initializer
-let address = deployer.without_initializer();
+let address = env.deploy("MyContract").without_initializer();
 ```
 
 ## Common Testing Patterns
@@ -64,24 +76,23 @@ let address = deployer.without_initializer();
 
 ```rust
 #[test]
-fn test_private_transfer() {
+unconstrained fn test_private_transfer() {
     let mut env = TestEnvironment::new();
-    let alice = AztecAddress::from_field(1);
-    let bob = AztecAddress::from_field(2);
+    let alice = env.create_light_account();
+    let bob = env.create_light_account();
 
     // Deploy and setup
-    let contract = deploy_token(&mut env, alice);
+    let contract_address = deploy_token(&mut env, alice);
 
     // Mint to alice first
-    contract.mint_private(alice, 100).call(&mut env.private());
+    env.call_private(alice, Token::at(contract_address).mint_private(alice, 100));
 
     // Transfer from alice to bob
-    env.impersonate(alice);
-    contract.transfer(bob, 50).call(&mut env.private());
+    env.call_private(alice, Token::at(contract_address).transfer(bob, 50));
 
-    // Verify balances
-    let alice_balance = contract.balance_of_private(alice).call(&mut env.private());
-    let bob_balance = contract.balance_of_private(bob).call(&mut env.private());
+    // Verify balances using simulate_utility for unconstrained reads
+    let alice_balance = env.simulate_utility(Token::at(contract_address).balance_of_private(alice));
+    let bob_balance = env.simulate_utility(Token::at(contract_address).balance_of_private(bob));
 
     assert(alice_balance == 50);
     assert(bob_balance == 50);
@@ -92,19 +103,18 @@ fn test_private_transfer() {
 
 ```rust
 #[test]
-fn test_public_mint() {
+unconstrained fn test_public_mint() {
     let mut env = TestEnvironment::new();
-    let admin = AztecAddress::from_field(1);
-    let user = AztecAddress::from_field(2);
+    let admin = env.create_light_account();
+    let user = env.create_light_account();
 
-    let contract = deploy_token(&mut env, admin);
+    let contract_address = deploy_token(&mut env, admin);
 
     // Admin mints tokens
-    env.impersonate(admin);
-    contract.mint_public(user, 1000).call(&mut env.public());
+    env.call_public(admin, Token::at(contract_address).mint_public(user, 1000));
 
     // Verify balance
-    let balance = contract.balance_of_public(user).call(&mut env.public());
+    let balance = env.view_public(Token::at(contract_address).balance_of_public(user));
     assert(balance == 1000);
 }
 ```
@@ -113,17 +123,15 @@ fn test_public_mint() {
 
 ```rust
 #[test(should_fail)]
-fn test_unauthorized_mint() {
+unconstrained fn test_unauthorized_mint() {
     let mut env = TestEnvironment::new();
-    let admin = AztecAddress::from_field(1);
-    let attacker = AztecAddress::from_field(2);
+    let admin = env.create_light_account();
+    let attacker = env.create_light_account();
 
-    let contract = deploy_token(&mut env, admin);
+    let contract_address = deploy_token(&mut env, admin);
 
-    // Non-admin tries to mint
-    env.impersonate(attacker);
-    contract.mint_public(attacker, 1000).call(&mut env.public());
-    // Should fail with "Unauthorized" or similar
+    // Non-admin tries to mint - should fail
+    env.call_public(attacker, Token::at(contract_address).mint_public(attacker, 1000));
 }
 ```
 
@@ -131,22 +139,21 @@ fn test_unauthorized_mint() {
 
 ```rust
 #[test]
-fn test_public_to_private() {
+unconstrained fn test_public_to_private() {
     let mut env = TestEnvironment::new();
-    let user = AztecAddress::from_field(1);
+    let user = env.create_light_account();
 
-    let contract = deploy_token(&mut env, user);
+    let contract_address = deploy_token(&mut env, user);
 
     // Give user some public tokens
-    contract.mint_public(user, 100).call(&mut env.public());
+    env.call_public(user, Token::at(contract_address).mint_public(user, 100));
 
     // Move tokens from public to private
-    env.impersonate(user);
-    contract.public_to_private(50).call(&mut env.private());
+    env.call_private(user, Token::at(contract_address).public_to_private(50));
 
     // Verify balances in both domains
-    let public_balance = contract.balance_of_public(user).call(&mut env.public());
-    let private_balance = contract.balance_of_private(user).call(&mut env.private());
+    let public_balance = env.view_public(Token::at(contract_address).balance_of_public(user));
+    let private_balance = env.simulate_utility(Token::at(contract_address).balance_of_private(user));
 
     assert(public_balance == 50);
     assert(private_balance == 50);
@@ -183,11 +190,9 @@ fn test_transfer_fails_with_insufficient_balance() { }
 Create reusable helpers for common setup:
 
 ```rust
-fn deploy_token(env: &mut TestEnvironment, admin: AztecAddress) -> Token {
-    let deployer = env.deploy("Token");
+unconstrained fn deploy_token(env: &mut TestEnvironment, admin: AztecAddress) -> AztecAddress {
     let initializer = Token::interface().constructor(admin);
-    let address = deployer.with_public_initializer(admin, initializer);
-    Token::at(address)
+    env.deploy("Token").with_public_initializer(admin, initializer)
 }
 ```
 

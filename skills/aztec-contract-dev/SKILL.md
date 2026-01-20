@@ -116,14 +116,15 @@ fn cancel_stream(stream_id: Field, recipient: AztecAddress) {
 ```rust
 // ✅ CORRECT: Public storage allows both parties to interact
 #[storage]
-struct Storage {
+struct Storage<Context> {
     streams: Map<Field, PublicMutable<StreamData, Context>, Context>,
 }
 
+#[external("private")]
 fn cancel_stream(stream_id: Field) {
     let sender = self.msg_sender().unwrap();
     // Validate in public where both parties can access
-    self.enqueue(Self::at(this).process_cancellation(stream_id, sender));
+    self.enqueue_self.process_cancellation(stream_id, sender);
 }
 ```
 
@@ -156,16 +157,18 @@ fn set_config(new_value: Field) {
 #[external("private")]
 fn shield(amount: u128) {
     let sender = self.msg_sender().unwrap();
+    // Enqueue call to deduct from public balance
     self.enqueue_self._burn_public(sender, amount as u64);
+    // Add to private balance
     self.storage.private_balances.at(sender).add(amount).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
 }
 
 #[external("public")]
 #[only_self]
-fn _burn_public(from: AztecAddress, amount: Field) {
+fn _burn_public(from: AztecAddress, amount: u64) {
     let balance = self.storage.public_balances.at(from).read();
-    assert(balance >= amount, "Insufficient balance");
-    self.storage.public_balances.at(from).write(balance - amount);
+    assert(balance >= amount as Field, "Insufficient balance");
+    self.storage.public_balances.at(from).write(balance - amount as Field);
 }
 ```
 

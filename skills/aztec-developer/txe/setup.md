@@ -9,9 +9,9 @@ Some imports you may need:
 use aztec::{
     oracle::random::random,
     protocol_types::address::AztecAddress,
-    test::helpers::{test_environment::TestEnvironment, txe_oracles}
+    test::helpers::test_environment::TestEnvironment,
 };
-use token_contract::Token; // contract imports will vary based on what you're testing
+use token::Token; // contract imports will vary based on what you're testing
 ```
 
 ### Constants

@@ -14,11 +14,12 @@ This project uses the Aztec Network for privacy-preserving smart contract develo
 ### Basic Contract Template
 
 ```rust
+use aztec::macros::aztec;
+
 #[aztec]
-contract MyContract {
-    use dep::aztec::macros::aztec;
-    use dep::aztec::state_vars::{Map, PublicMutable, PrivateSet, Owned};
-    use dep::aztec::types::AztecAddress;
+pub contract MyContract {
+    use aztec::state_vars::{Map, PublicMutable, PrivateSet, Owned};
+    use aztec::protocol_types::address::AztecAddress;
 
     #[storage]
     struct Storage<Context> {
@@ -101,15 +102,15 @@ fn balance_of_public(owner: AztecAddress) -> Field {
 }
 ```
 
-### Unconstrained Functions
+### Unconstrained (Utility) Functions
 
 - Execute off-chain without proofs
 - Used for reading private state
-- Use `unconstrained` keyword
+- Use `#[external("utility")]` attribute with `unconstrained` keyword
 
 ```rust
-#[external("private")]
-unconstrained fn balance_of_private(owner: AztecAddress) -> Field {
+#[external("utility")]
+unconstrained fn balance_of_private(owner: AztecAddress) -> u128 {
     self.storage.balances.at(owner).balance_of()
 }
 ```
@@ -168,7 +169,7 @@ Map<Key, ValueType, Context>
 Notes are encrypted data structures that represent private state:
 
 ```rust
-use dep::value_note::value_note::ValueNote;
+use value_note::value_note::ValueNote;
 
 // In storage
 // Owned replaces Map<AztecAddress, T> for per-user private storage
@@ -187,20 +188,28 @@ self.storage.balances.at(owner).sub(amount).deliver(MessageDelivery.CONSTRAINED_
 ## Testing Contracts
 
 ```rust
-use dep::aztec::test::helpers::test_environment::TestEnvironment;
+use aztec::{
+    protocol_types::address::AztecAddress,
+    test::helpers::test_environment::TestEnvironment,
+};
 
 #[test]
-fn test_my_contract() {
+unconstrained fn test_my_contract() {
     let mut env = TestEnvironment::new();
+    let owner = env.create_light_account();  // or env.create_contract_account() for authwit tests
 
     // Deploy contract
-    let deployer = env.deploy("MyContract");
-    let initializer = MyContract::interface().constructor(admin);
-    let contract_address = deployer.with_public_initializer(admin, initializer);
+    let initializer = MyContract::interface().constructor(owner);
+    let contract_address = env.deploy("MyContract").with_public_initializer(owner, initializer);
 
-    // Interact with contract
-    let contract = MyContract::at(contract_address);
-    contract.some_function(args).call(&mut env.private());
+    // Call private function
+    env.call_private(owner, MyContract::at(contract_address).some_private_function(args));
+
+    // Call public function
+    env.call_public(owner, MyContract::at(contract_address).some_public_function(args));
+
+    // View public state (read-only)
+    let result = env.view_public(MyContract::at(contract_address).get_value());
 }
 ```
 
@@ -252,6 +261,7 @@ This is a common source of design bugs. Key rules:
 - **If you need multi-party access** - Use public storage instead of notes
 
 **Anti-Pattern (BROKEN):**
+
 ```rust
 // Sender CANNOT actually cancel this - they don't own the note!
 #[note]
@@ -262,6 +272,7 @@ struct StreamNote {
 ```
 
 **Correct Pattern:**
+
 ```rust
 // Use public storage when multiple parties need access
 streams: Map<Field, PublicMutable<StreamData, Context>, Context>,
@@ -293,13 +304,15 @@ name = "my_contract"
 type = "contract"
 
 [dependencies]
-aztec = { git = "https://github.com/AztecProtocol/aztec-packages/", tag = "aztec-packages-v0.XX.X", directory = "noir-projects/aztec-nr/aztec" }
-value_note = { git = "https://github.com/AztecProtocol/aztec-packages/", tag = "aztec-packages-v0.XX.X", directory = "noir-projects/aztec-nr/value-note" }
+aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "aztec" }
+value_note = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "value-note" }
+balance_set = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "balance-set" }
 ```
 
 ## Looking Up Latest Documentation
 
 This plugin includes the Context7 MCP server for fetching up-to-date Aztec documentation. Use it when:
+
 - You need the latest API details that may have changed
 - The user asks about features not covered in this guide
 - You want to verify syntax or patterns are current
@@ -322,6 +335,7 @@ query-docs: libraryId="/aztecprotocol/aztec-packages", query="<specific question
 ```
 
 **When to use which source:**
+
 - `/aztecprotocol/aztec-starter` - **Reference implementations (53 snippets)** - Use for examples of deployment scripts, integration tests, TypeScript client code, devnet configuration, and other common development tasks
 - `/aztecprotocol/aztec-examples` - **Example contracts and sample code (284 snippets)** - Use this FIRST when looking for contract patterns, implementations, or learning how to build specific features
 - `/websites/aztec_network` - Official docs, tutorials, guides (7k+ snippets)
