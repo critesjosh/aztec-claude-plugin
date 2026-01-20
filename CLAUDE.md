@@ -11,41 +11,32 @@ This project uses the Aztec Network for privacy-preserving smart contract develo
 
 ## ⚠️ Critical: Aztec ≠ Solidity
 
-**If you're coming from Solidity, unlearn these assumptions:**
-
-| Solidity Concept | Aztec Equivalent | Key Difference |
-|------------------|------------------|----------------|
-| Storage slots | **Notes** | Private state is encrypted UTXOs, not contract storage |
-| Reentrancy guards | **Nullifiers** | Notes are consumed (nullified) to prevent double-spend |
-| `msg.sender` for auth | **Account contracts** | Auth logic lives in the user's account contract, not the app |
-| One tx = one proof | **Proof composition** | Private functions can call other private functions in one proof |
-
-### Private State = Notes (Not Storage)
+### Private State = Notes
 
 In Solidity, you read/write storage slots. In Aztec, private state uses **notes**:
-- Notes are encrypted, off-chain data that only the owner can decrypt
-- To "update" private state, you consume (nullify) the old note and create a new one
+
+- Notes are encrypted, off-chain data that only the owner can decrypt. Note hashes are committed to onchain
+- To "update" private state, you consume (nullify) the old note and create a new one. The aztec-nr library handles the details
 - You cannot iterate over notes or query them like a database
 
-### Nullifiers Prevent Double-Spend (Not Reentrancy)
+### Nullifiers Prevent Double-Spend
 
 Nullifiers are unique identifiers computed from notes:
+
 - When you spend a note, its nullifier is published on-chain
 - The protocol rejects any transaction that reuses a nullifier
-- This prevents double-spending, similar to how Bitcoin prevents spending the same UTXO twice
 
-### Account Contracts Handle Auth (Not msg.sender)
+### Account Contracts Handle Auth
 
-In Aztec, `msg.sender` exists but auth works differently:
+In Aztec, `msg_sender` exists but auth works differently:
+
 - Users deploy their own **account contract** that defines their auth rules
 - The account contract validates signatures, multisig, social recovery, etc.
 - App contracts call `context.msg_sender()` but the actual auth happened in the account contract
-- This means apps don't need to implement signature verification—accounts handle it
 
 ### Private-to-Private Calls Compose in One Proof
 
-Unlike Solidity's external calls:
-- A private function calling another private function happens in the **same client-side proof**
+- A private function calling another private function happens in the **same client-side transaction**
 - No separate transaction or on-chain interaction needed
 - The PXE composes all private calls into one proof before submission
 
@@ -358,14 +349,17 @@ The Aztec API changes significantly between versions. Always check the version f
 ### How to Detect Version
 
 1. **Search for Nargo.toml files** in the user's project:
+
    ```
    Glob: **/Nargo.toml
    ```
 
 2. **Extract the aztec dependency tag** from Nargo.toml:
+
    ```toml
    aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "aztec" }
    ```
+
    The version is the `tag` value (e.g., `v3.0.0-devnet.6-patch.1`).
 
 3. **Remember the version** for the session and include it in Context7 queries.
@@ -385,6 +379,7 @@ query-docs: libraryId="/aztecprotocol/aztec-examples", query="PrivateSet storage
 ### Version Mismatch Warning
 
 If you detect a version different from `v3.0.0-devnet.6-patch.1` (the version this plugin is configured for):
+
 - Warn the user that patterns in this guide may not match their version
 - Prioritize Context7 documentation over the examples in this file
 - Query with their specific version to get accurate syntax
@@ -392,6 +387,7 @@ If you detect a version different from `v3.0.0-devnet.6-patch.1` (the version th
 ### Quick Version Check Command
 
 To quickly check a project's Aztec version:
+
 ```bash
 grep -r "aztec.*tag" **/Nargo.toml 2>/dev/null | head -1
 ```
@@ -447,6 +443,7 @@ query-docs: libraryId="/aztecprotocol/aztec-packages", query="MessageDelivery AP
 - `/aztecprotocol/aztec-packages` - Source code, implementation details (27k+ snippets)
 
 **IMPORTANT:**
+
 - When a user asks for examples, sample code, or "how do I implement X", always query `/aztecprotocol/aztec-examples` first before other sources.
 - **Always include the user's Aztec version** (from their Nargo.toml) in Context7 queries to get version-appropriate documentation.
 
