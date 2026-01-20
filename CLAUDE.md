@@ -309,9 +309,71 @@ value_note = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0
 balance_set = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "balance-set" }
 ```
 
+## Version Detection
+
+**IMPORTANT: Before working on any Aztec project, detect the user's Aztec version.**
+
+The Aztec API changes significantly between versions. Always check the version first:
+
+### How to Detect Version
+
+1. **Search for Nargo.toml files** in the user's project:
+   ```
+   Glob: **/Nargo.toml
+   ```
+
+2. **Extract the aztec dependency tag** from Nargo.toml:
+   ```toml
+   aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "aztec" }
+   ```
+   The version is the `tag` value (e.g., `v3.0.0-devnet.6-patch.1`).
+
+3. **Remember the version** for the session and include it in Context7 queries.
+
+### Version Context in Queries
+
+When querying Context7, **always include the detected version** in your query string:
+
+```
+# Good - includes version context
+query-docs: libraryId="/aztecprotocol/aztec-examples", query="PrivateSet storage pattern for Aztec v3.0.0-devnet.6"
+
+# Bad - no version context
+query-docs: libraryId="/aztecprotocol/aztec-examples", query="PrivateSet storage pattern"
+```
+
+### Version Mismatch Warning
+
+If you detect a version different from `v3.0.0-devnet.6-patch.1` (the version this plugin is configured for):
+- Warn the user that patterns in this guide may not match their version
+- Prioritize Context7 documentation over the examples in this file
+- Query with their specific version to get accurate syntax
+
+### Quick Version Check Command
+
+To quickly check a project's Aztec version:
+```bash
+grep -r "aztec.*tag" **/Nargo.toml 2>/dev/null | head -1
+```
+
 ## Looking Up Latest Documentation
 
-This plugin includes the Context7 MCP server for fetching up-to-date Aztec documentation. Use it when:
+This plugin includes the Context7 MCP server for fetching up-to-date Aztec documentation.
+
+### ⚠️ MANDATORY: Always Use Context7 For
+
+**You MUST query Context7 before responding** when the user asks about:
+
+1. **Library/API documentation** - Function signatures, parameters, return types
+2. **Code generation** - Writing new contracts, functions, or TypeScript integrations
+3. **Setup or configuration** - Project setup, Nargo.toml dependencies, toolchain config
+4. **Syntax or patterns** - State variables, function attributes, note structures
+
+This ensures users always get the most up-to-date information, even if it differs from examples in this guide.
+
+### When to Use Context7
+
+Use Context7 when:
 
 - You need the latest API details that may have changed
 - The user asks about features not covered in this guide
@@ -321,17 +383,20 @@ This plugin includes the Context7 MCP server for fetching up-to-date Aztec docum
 **How to use Context7 for Aztec:**
 
 ```
+# Always include the detected version in your queries!
+# Replace {VERSION} with the version from Nargo.toml (e.g., "v3.0.0-devnet.6")
+
 # For reference implementations of common tasks (deployment, testing, TypeScript client)
-query-docs: libraryId="/aztecprotocol/aztec-starter", query="<deployment, testing, or TypeScript patterns>"
+query-docs: libraryId="/aztecprotocol/aztec-starter", query="deployment script for Aztec {VERSION}"
 
 # For example contracts (RECOMMENDED for learning patterns)
-query-docs: libraryId="/aztecprotocol/aztec-examples", query="<specific pattern or contract type>"
+query-docs: libraryId="/aztecprotocol/aztec-examples", query="token contract pattern Aztec {VERSION}"
 
 # For official Aztec docs
-query-docs: libraryId="/websites/aztec_network", query="<specific question>"
+query-docs: libraryId="/websites/aztec_network", query="PrivateSet storage Aztec {VERSION}"
 
 # For monorepo source code and implementation details
-query-docs: libraryId="/aztecprotocol/aztec-packages", query="<specific question>"
+query-docs: libraryId="/aztecprotocol/aztec-packages", query="MessageDelivery API Aztec {VERSION}"
 ```
 
 **When to use which source:**
@@ -341,7 +406,9 @@ query-docs: libraryId="/aztecprotocol/aztec-packages", query="<specific question
 - `/websites/aztec_network` - Official docs, tutorials, guides (7k+ snippets)
 - `/aztecprotocol/aztec-packages` - Source code, implementation details (27k+ snippets)
 
-**IMPORTANT:** When a user asks for examples, sample code, or "how do I implement X", always query `/aztecprotocol/aztec-examples` first before other sources.
+**IMPORTANT:**
+- When a user asks for examples, sample code, or "how do I implement X", always query `/aztecprotocol/aztec-examples` first before other sources.
+- **Always include the user's Aztec version** (from their Nargo.toml) in Context7 queries to get version-appropriate documentation.
 
 ## Useful Resources
 
