@@ -1,16 +1,16 @@
 # Pattern: Partial Notes
 
 ## When to Use
+
 - **Public→Private transfers**: Moving tokens from public balance to private balance while hiding the recipient
 - **Refunds with unknown amounts**: Private function overpays, public function determines actual cost, refund goes back privately (e.g., fee payment contracts)
 - **DEX/AMM swaps**: Swap amount determined publicly, output sent privately
 
 ## Mental Model
+
 Partial notes solve the problem: "How can a public function create a private note without knowing who it's for?"
 
-The answer: The recipient creates an *incomplete* note commitment in private (containing their identity, randomness, storage slot—but NOT the amount). This commitment is passed to public execution, where the amount is added and the note is finalized. The recipient's PXE can reconstruct the complete note because it knows both the private parts (from creation) and the public parts (from logs).
-
-**Key insight**: The note commitment uses elliptic curve math. Adding `G_amt * amount` to the partial commitment in public completes the note hash, without revealing who the note belongs to.
+The answer: The recipient creates an _incomplete_ note commitment in private (containing their identity, randomness, storage slot—but NOT the amount). This commitment is passed to public execution, where the amount is added and the note is finalized. The recipient's PXE can reconstruct the complete note because it knows both the private parts (from creation) and the public parts (from logs).
 
 ## Flow
 
@@ -45,5 +45,6 @@ fn transfer_to_private(to: AztecAddress, amount: u64) {
 See the `token_contract` source for the full implementation of `prepare_private_balance_increase` and `finalize_transfer_to_private`.
 
 ## Reference
+
 `token_contract` - `transfer_to_private`, `prepare_private_balance_increase`, `finalize_transfer_to_private`
 `fpc_contract` - fee payment with refunds using partial notes
