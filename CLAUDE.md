@@ -1,12 +1,11 @@
 # Aztec Development Guidelines
 
-This project uses the Aztec Network for privacy-preserving smart contract development. Follow these guidelines when working with Aztec contracts and applications.
+This project uses the Aztec Network for privacy-preserving smart contract development.
 
 ## Technology Stack
 
 - **Noir**: Domain-specific language for writing Aztec smart contracts
 - **Aztec.nr**: Noir framework for Aztec contract development
-- **aztec-cli**: Command-line tool for deployment and interaction
 - **PXE (Private Execution Environment)**: Client-side execution for private functions
 
 ## ⚠️ Critical: Aztec ≠ Solidity
@@ -15,32 +14,26 @@ This project uses the Aztec Network for privacy-preserving smart contract develo
 
 In Solidity, you read/write storage slots. In Aztec, private state uses **notes**:
 
-- Notes are encrypted, off-chain data that only the owner can decrypt. Note hashes are committed to onchain
-- To "update" private state, you consume (nullify) the old note and create a new one. The aztec-nr library handles the details
+- Notes are encrypted, off-chain data that only the owner can decrypt
+- To "update" private state, you consume (nullify) the old note and create a new one
 - You cannot iterate over notes or query them like a database
 
 ### Nullifiers Prevent Double-Spend
-
-Nullifiers are unique identifiers computed from notes:
 
 - When you spend a note, its nullifier is published on-chain
 - The protocol rejects any transaction that reuses a nullifier
 
 ### Account Contracts Handle Auth
 
-In Aztec, `msg_sender` exists but auth works differently:
-
 - Users deploy their own **account contract** that defines their auth rules
-- The account contract validates signatures, multisig, social recovery, etc.
-- App contracts call `context.msg_sender()` but the actual auth happened in the account contract
+- App contracts call `context.msg_sender()` but auth happens in the account contract
 
 ### Private-to-Private Calls Compose in One Proof
 
-- A private function calling another private function happens in the **same client-side transaction**
-- No separate transaction or on-chain interaction needed
+- Private function calling another private function happens in the same client-side transaction
 - The PXE composes all private calls into one proof before submission
 
-## Contract Structure
+## Quick Reference
 
 ### Basic Contract Template
 
@@ -49,18 +42,15 @@ use aztec::macros::aztec;
 
 #[aztec]
 pub contract MyContract {
-    use aztec::state_vars::{Map, PublicMutable, PrivateSet, Owned};
+    use aztec::macros::{functions::{external, initializer, view}, storage::storage};
     use aztec::protocol_types::address::AztecAddress;
+    use aztec::state_vars::{Map, PublicMutable, Owned};
+    use balance_set::BalanceSet;
 
     #[storage]
     struct Storage<Context> {
-        // Public state (visible on-chain)
         admin: PublicMutable<AztecAddress, Context>,
-        public_data: Map<AztecAddress, PublicMutable<Field, Context>, Context>,
-
-        // Private state (encrypted, only visible to owners)
-        // Owned replaces Map<AztecAddress, T> for per-user private storage
-        private_data: Owned<PrivateSet<ValueNote, Context>, Context>,
+        balances: Owned<BalanceSet<Context>, Context>,
     }
 
     #[external("public")]
@@ -68,246 +58,47 @@ pub contract MyContract {
     fn constructor(admin: AztecAddress) {
         self.storage.admin.write(admin);
     }
+
+    #[external("public")]
+    #[view]
+    fn balance_of_public(owner: AztecAddress) -> u128 {
+        self.storage.public_balances.at(owner).read()
+    }
+
+    #[external("utility")]
+    unconstrained fn balance_of_private(owner: AztecAddress) -> u128 {
+        self.storage.balances.at(owner).balance_of()
+    }
 }
 ```
 
-## Function Types
+### Function Attributes
 
-### Private Functions
+| Attribute | Purpose |
+|-----------|---------|
+| `#[external("private")]` | Executes in PXE, can read/write private state |
+| `#[external("public")]` | Executes on sequencer, visible to everyone |
+| `#[external("utility")]` + `unconstrained` | Off-chain reads without proofs |
+| `#[view]` | Read-only, doesn't modify state |
+| `#[only_self]` | Only callable by the contract itself |
+| `#[initializer]` | Constructor function |
 
-- Execute client-side in the PXE
-- Can read/write private state
-- Cannot directly read public state (must use oracles or enqueue public calls)
-- Use `#[external("private")]` attribute
+### Detailed Documentation
 
-```rust
-#[external("private")]
-fn transfer(to: AztecAddress, amount: u128) {
-    let from = self.msg_sender().unwrap();
-    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
-    self.storage.balances.at(to).add(amount).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
-}
-```
+For comprehensive patterns, see the skills:
 
-### Public Functions
+- **[Contract Development](./skills/aztec-developer/contract-dev/index.md)** - Storage, notes, cross-contract calls
+- **[Unit Testing](./skills/aztec-developer/txe/index.md)** - TXE test environment
+- **[TypeScript Integration](./skills/aztec-typescript/SKILL.md)** - Frontend patterns
+- **[Deployment](./skills/aztec-deploy/SKILL.md)** - Deploy scripts and fee payment
 
-- Execute on the Aztec sequencer
-- Can read/write public state
-- Visible to everyone
-- Use `#[external("public")]` attribute
-
-```rust
-#[external("public")]
-fn mint_public(to: AztecAddress, amount: Field) {
-    assert(self.msg_sender().unwrap() == self.storage.admin.read());
-    let current = self.storage.public_balances.at(to).read();
-    self.storage.public_balances.at(to).write(current + amount);
-}
-```
-
-### Internal Functions
-
-- Only callable by the contract itself
-- Use `#[only_self]` attribute
-
-```rust
-#[external("public")]
-#[only_self]
-fn _deduct_public_balance(owner: AztecAddress, amount: u64) {
-    let balance = self.storage.public_balances.at(owner).read();
-    assert(balance >= amount, "Insufficient balance");
-    self.storage.public_balances.at(owner).write(balance - amount);
-}
-```
-
-### View Functions
-
-- Read-only, don't modify state
-- Use `#[view]` attribute
-
-```rust
-#[external("public")]
-#[view]
-fn balance_of_public(owner: AztecAddress) -> Field {
-    self.storage.public_balances.at(owner).read()
-}
-```
-
-### Unconstrained (Utility) Functions
-
-- Execute off-chain without proofs
-- Used for reading private state
-- Use `#[external("utility")]` attribute with `unconstrained` keyword
-
-```rust
-#[external("utility")]
-unconstrained fn balance_of_private(owner: AztecAddress) -> u128 {
-    self.storage.balances.at(owner).balance_of()
-}
-```
-
-## Private <> Public Communication
-
-### Calling Public from Private (Enqueue)
-
-Private functions can enqueue public function calls that execute after the private portion:
-
-```rust
-#[external("private")]
-fn public_to_private(amount: u64) {
-    let sender = self.msg_sender().unwrap();
-    // Enqueue public call
-    self.enqueue_self._deduct_public_balance(sender, amount);
-    // Continue with private logic
-    self.storage.private_balances.at(sender).add(amount as u128);
-}
-```
-
-### Cross-Contract Calls
-
-```rust
-// Call another contract's function
-self.call(OtherContract::at(contract_address).some_function(args));
-
-// Enqueue a public call to another contract
-self.enqueue(OtherContract::at(contract_address).some_public_fn(args));
-```
-
-## State Variables
-
-### Public State
-
-- `PublicMutable<T, Context>`: Single mutable value
-- `PublicImmutable<T, Context>`: Single immutable value (set once)
-- `SharedMutable<T, Context>`: Value with delayed mutability for privacy
-
-### Private State
-
-All private state variables must be wrapped in `Owned`:
-
-- `Owned<PrivateSet<Note, Context>, Context>`: Set of encrypted notes
-- `Owned<PrivateMutable<Note, Context>, Context>`: Single encrypted note
-- `Owned<PrivateImmutable<Note, Context>, Context>`: Single immutable encrypted note
-
-### Maps
-
-```rust
-Map<Key, ValueType, Context>
-```
-
-## Notes (Private State)
-
-Notes are encrypted data structures that represent private state:
-
-```rust
-use value_note::value_note::ValueNote;
-
-// In storage
-// Owned replaces Map<AztecAddress, T> for per-user private storage
-balances: Owned<PrivateSet<ValueNote, Context>, Context>,
-
-// Usage - for generic notes (PrivateSet)
-self.storage.notes.at(owner).insert(note).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);  // Create note
-self.storage.notes.at(owner).remove(note);  // Consume note
-
-// For token balances, use BalanceSet instead (from balance_set library)
-// self.storage.balances: Owned<BalanceSet<Context>, Context>
-self.storage.balances.at(owner).add(amount).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
-self.storage.balances.at(owner).sub(amount).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
-```
-
-## Testing Contracts
-
-```rust
-use aztec::{
-    protocol_types::address::AztecAddress,
-    test::helpers::test_environment::TestEnvironment,
-};
-
-#[test]
-unconstrained fn test_my_contract() {
-    let mut env = TestEnvironment::new();
-    let owner = env.create_light_account();  // or env.create_contract_account() for authwit tests
-
-    // Deploy contract
-    let initializer = MyContract::interface().constructor(owner);
-    let contract_address = env.deploy("MyContract").with_public_initializer(owner, initializer);
-
-    // Call private function
-    env.call_private(owner, MyContract::at(contract_address).some_private_function(args));
-
-    // Call public function
-    env.call_public(owner, MyContract::at(contract_address).some_public_function(args));
-
-    // View public state (read-only)
-    let result = env.view_public(MyContract::at(contract_address).get_value());
-}
-```
-
-## Common Patterns
-
-### Access Control
-
-```rust
-#[external("public")]
-fn admin_only_function() {
-    assert(self.msg_sender().unwrap() == self.storage.admin.read(), "Not admin");
-    // ... function logic
-}
-```
-
-### Ownership Check from Private
-
-```rust
-#[external("public")]
-#[only_self]
-fn _assert_is_owner(address: AztecAddress) {
-    assert_eq(address, self.storage.owner.read(), "Not owner");
-}
-
-#[external("private")]
-fn owner_action() {
-    self.enqueue_self._assert_is_owner(self.msg_sender().unwrap());
-    // If the above fails, the entire tx reverts
-}
-```
-
-## Security Best Practices
-
-1. **Never leak private data in public functions** - Public function args/returns are visible
-2. **Use nullifiers properly** - Prevent double-spending of notes
-3. **Validate all inputs** - Especially in public functions
-4. **Be careful with msg_sender in private** - Use `.unwrap()` to ensure it's set
-5. **Consider timing attacks** - Public state reads in private can leak information
-6. **Test thoroughly** - Both unit tests and integration tests
-
-### ⚠️ Critical: Note Ownership Constraints
+## ⚠️ Critical: Note Ownership
 
 **Only the owner of a note can nullify (spend/replace/delete) it.**
 
-This is a common source of design bugs. Key rules:
-
-- **Fields on notes are just data, not permissions** - Storing a `sender` address on a note does NOT allow the sender to modify that note
-- **Notes are encrypted for the owner** - Non-owners cannot even see the note contents
-- **If you need multi-party access** - Use public storage instead of notes
-
-**Anti-Pattern (BROKEN):**
-
-```rust
-// Sender CANNOT actually cancel this - they don't own the note!
-#[note]
-struct StreamNote {
-    sender: AztecAddress,  // This is just DATA, not a permission
-    owner: AztecAddress,   // Only THIS address can nullify
-}
-```
-
-**Correct Pattern:**
-
-```rust
-// Use public storage when multiple parties need access
-streams: Map<Field, PublicMutable<StreamData, Context>, Context>,
-```
+- Fields on notes are just data, not permissions
+- Storing a `sender` address does NOT allow the sender to modify that note
+- If you need multi-party access, use public storage instead
 
 See [Notes Pattern](./skills/aztec-developer/contract-dev/notes.md) for detailed guidance.
 
@@ -318,12 +109,8 @@ project/
 ├── contracts/
 │   └── my_contract/
 │       ├── Nargo.toml
-│       └── src/
-│           └── main.nr
-├── src/
-│   └── index.ts      # TypeScript client code
-├── tests/
-│   └── my_contract.test.ts
+│       └── src/main.nr
+├── src/index.ts
 └── package.json
 ```
 
@@ -336,107 +123,58 @@ type = "contract"
 
 [dependencies]
 aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "aztec" }
-value_note = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "value-note" }
-balance_set = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "balance-set" }
 ```
 
 ## Version Detection
 
-**IMPORTANT: Before working on any Aztec project, detect the user's Aztec version.**
+**IMPORTANT: Detect the user's Aztec version before writing code.**
 
-The Aztec API changes significantly between versions. Always check the version first:
+Extract the version from `Nargo.toml`:
 
-### How to Detect Version
-
-1. **Search for Nargo.toml files** in the user's project:
-
-   ```
-   Glob: **/Nargo.toml
-   ```
-
-2. **Extract the aztec dependency tag** from Nargo.toml:
-
-   ```toml
-   aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "aztec" }
-   ```
-
-   The version is the `tag` value (e.g., `v3.0.0-devnet.6-patch.1`).
-
-3. **Remember the version** for the session and include it in searches.
-
-### Version Mismatch Warning
-
-If you detect a version different from `v3.0.0-devnet.6-patch.1` (the version this plugin is configured for):
-
-- Warn the user that patterns in this guide may not match their version
-- Prioritize Aztec MCP server documentation over the examples in this file
-- Search with their specific version to get accurate syntax
-
-### Quick Version Check Command
-
-To quickly check a project's Aztec version:
-
-```bash
-grep -r "aztec.*tag" **/Nargo.toml 2>/dev/null | head -1
+```toml
+aztec = { git = "...", tag = "v3.0.0-devnet.6-patch.1", ... }
 ```
 
-## Looking Up Latest Documentation
+If version differs from `v3.0.0-devnet.6-patch.1`:
+- Warn the user that patterns may not match their version
+- Prioritize Aztec MCP server over examples in this file
 
-This plugin includes the `aztec-mcp-server` for accessing Aztec documentation, examples, and source code.
+## ⚠️ MANDATORY: Always Use Aztec MCP Server First
 
-### Aztec MCP Server
+**The Aztec API changes frequently. Query the aztec-mcp-server BEFORE writing any Aztec code.**
 
-The `aztec-mcp-server` clones Aztec repositories locally and provides tools for:
+### Workflow
 
-- **Cloning repositories** - aztec-packages, aztec-examples, aztec-starter
-- **Searching code** - Regex-based search across contract code and documentation
-- **Browsing examples** - Navigate example smart contracts
-- **Reading files** - Direct file access from cloned repositories
+```
+User asks Aztec question
+         ↓
+   aztec_sync_repos() (if not done)
+         ↓
+   aztec_search_code() or aztec_search_docs()
+         ↓
+   aztec_read_example() if needed
+         ↓
+   Respond with VERIFIED current syntax
+```
 
-### ⚠️ MANDATORY: Always Use Aztec MCP Server For
+### When to Use
 
-**You MUST use the Aztec MCP server before responding** when the user asks about:
+- Library/API documentation
+- Code generation
+- Setup or configuration
+- Syntax or patterns
+- Error troubleshooting
 
-1. **Library/API documentation** - Function signatures, parameters, return types
-2. **Code generation** - Writing new contracts, functions, or TypeScript integrations
-3. **Setup or configuration** - Project setup, Nargo.toml dependencies, toolchain config
-4. **Syntax or patterns** - State variables, function attributes, note structures
-
-This ensures users always get the most up-to-date information, even if it differs from examples in this guide.
-
-### When to Use It
-
-Use the Aztec MCP server when:
-
-- You need the latest API details that may have changed
-- The user asks about features not covered in this guide
-- You want to verify syntax or patterns are current
-- You need working example contracts to reference
-- You need to search for specific code patterns across the Aztec codebase
-
-### Switching Aztec Versions
-
-The plugin defaults to a specific Aztec version, but users can switch to a different version:
-
-**Option 1: Use the `/aztec-version` command**
+### Switching Versions
 
 ```bash
-/aztec-version                    # Autodetect from project's Nargo.toml
+/aztec-version                    # Autodetect from Nargo.toml
 /aztec-version v3.0.0-devnet.7    # Use specific version
 ```
 
-When no version is specified, the command will search for `Nargo.toml` files and extract the aztec dependency tag automatically.
-
-**Option 2: Pass version to `aztec_sync_repos`**
+Or pass version to sync:
 ```
 aztec_sync_repos({ version: "v3.0.0-devnet.7", force: true })
-```
-
-The `force: true` parameter re-clones repos even if they exist, ensuring you get the new version.
-
-**Check current version:**
-```
-aztec_status()
 ```
 
 ## Useful Resources

@@ -13,6 +13,7 @@ Generate TypeScript code for interacting with Aztec contracts.
 * [Contract Client](./contract-client.md) - Type-safe contract interaction wrapper
 * [Wallet Setup](./wallet-setup.md) - Wallet and node connection patterns
 * [Transaction Patterns](./transaction-patterns.md) - Common transaction patterns
+* [AuthWit Frontend](./authwit-frontend.md) - Client-side authorization witness implementation
 
 ## Quick Start: Contract Interaction
 
