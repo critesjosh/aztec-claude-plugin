@@ -82,16 +82,19 @@ import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 ```
 
-## Using Context7 MCP
+## Using Aztec MCP Server
 
-For detailed API documentation and deployment patterns, use Context7:
+For detailed API documentation and deployment patterns, use the Aztec MCP tools:
 
 ```
-# For reference deployment scripts and devnet configuration
-query-docs: libraryId="/aztecprotocol/aztec-starter", query="deployment scripts"
+# Sync repos first
+aztec_sync_repos()
 
-# For monorepo source and API details
-query-docs: libraryId="/aztecprotocol/aztec-packages", query="<deployment question>"
+# Search for deployment patterns
+aztec_search_code({ query: "deploy", filePattern: "*.ts" })
+
+# Search documentation
+aztec_search_docs({ query: "deployment" })
 ```
 
-The `/aztecprotocol/aztec-starter` library has reference implementations of deployment scripts, devnet configuration, and integration test patterns.
+The `aztec-starter` repo has reference implementations of deployment scripts, devnet configuration, and integration test patterns.

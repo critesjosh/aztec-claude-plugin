@@ -1,7 +1,7 @@
 # Pattern: State Variables
 
 ## Mental Model
-State variables in Aztec are either **public** (on-chain, readable by anyone) or **private** (stored as encrypted notes, only accessible to owners). This manifest explains all of your options, but does not explain HOW to use them. You need to use the context7 MCP to see how to actually implement them.
+State variables in Aztec are either **public** (on-chain, readable by anyone) or **private** (stored as encrypted notes, only accessible to owners). This manifest explains all of your options, but does not explain HOW to use them. You need to use the Aztec MCP server to see how to actually implement them.
 
 ## Index
 - `PublicMutable<T>` - Public, read/write. Counters, balances, flags.

@@ -32,32 +32,32 @@ See [TXE Setup](./txe/setup.md) to configure your test environment, then:
 - [Writing Tests](./txe/writing-tests.md) - Test patterns and assertions
 - [Running Tests](./txe/test-running.md) - Compilation and execution
 
-## Using Context7 MCP
+## Using Aztec MCP Server
 
-For detailed API documentation and code examples beyond what's covered here, use the Context7 MCP tools:
+For detailed API documentation and code examples beyond what's covered here, use the Aztec MCP tools:
 
-**For reference implementations of common tasks:**
+**First, sync the repos (if not already done):**
 ```
-query-docs: libraryId="/aztecprotocol/aztec-starter", query="<deployment, testing, or TypeScript patterns>"
-```
-
-**For example contracts (use this FIRST for patterns and implementations):**
-```
-query-docs: libraryId="/aztecprotocol/aztec-examples", query="<your specific pattern>"
+aztec_sync_repos()
 ```
 
-**For official documentation:**
+**Search for code patterns:**
 ```
-query-docs: libraryId="/websites/aztec_network", query="<your question>"
-```
-
-**For monorepo source code and implementation details:**
-```
-query-docs: libraryId="/aztecprotocol/aztec-packages", query="<your question>"
+aztec_search_code({ query: "<pattern>", filePattern: "*.nr" })
 ```
 
-**When to use which source:**
-- `/aztecprotocol/aztec-starter` - Reference implementations of deployment scripts, integration tests, TypeScript client code, devnet configuration
-- `/aztecprotocol/aztec-examples` - Working contract examples and implementation patterns (query this FIRST for contract code)
-- `/websites/aztec_network` - Official docs, tutorials, guides
-- `/aztecprotocol/aztec-packages` - Monorepo source code, implementation details
+**List and read example contracts:**
+```
+aztec_list_examples()
+aztec_read_example({ name: "<example-name>" })
+```
+
+**Search documentation:**
+```
+aztec_search_docs({ query: "<question>" })
+```
+
+**Read any file from cloned repos:**
+```
+aztec_read_file({ path: "<relative-path>" })
+```

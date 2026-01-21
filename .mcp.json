@@ -1,8 +1,11 @@
 {
   "mcpServers": {
-    "context7": {
+    "aztec": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"]
+      "args": ["-y", "aztec-mcp-server"],
+      "env": {
+        "AZTEC_DEFAULT_VERSION": "v3.0.0-devnet.6-plugin.1"
+      }
     }
   }
 }

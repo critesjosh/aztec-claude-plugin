@@ -8,7 +8,7 @@ Field elements have 32 bytes but only 31 are usable for data. Compressed strings
 - `FieldCompressedString`: up to 31 bytes in 1 field
 - `CompressedString<N, M>`: M bytes across N fields (N = ceil(M / 31))
 
-Use the context7 MCP if you require more context than this.
+Use the Aztec MCP server if you require more context than this.
 
 ## Import
 ```toml

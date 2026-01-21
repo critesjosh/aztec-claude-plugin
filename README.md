@@ -2,7 +2,7 @@
 
 A Claude Code plugin for Aztec smart contract and application development. This plugin provides specialized agents, skills, and commands to help you build privacy-preserving applications on the Aztec Network.
 
-⚠️ This plugin is currently set up to run on v3.0.0-devnet.6-patch.1
+⚠️ This plugin defaults to Aztec version `v3.0.0-devnet.6-plugin.1`. See [Switching Versions](#switching-versions) to use a different version.
 
 ## Installation
 
@@ -70,6 +70,44 @@ cd aztec-plugin
 
 See [NETWORK.md](./NETWORK.md) for detailed version differences.
 
+## Aztec MCP Server
+
+This plugin includes the [aztec-mcp-server](https://www.npmjs.com/package/aztec-mcp-server) which provides local access to Aztec documentation, examples, and source code.
+
+### Features
+
+- **Repository Cloning** - Clones aztec-packages, aztec-examples, and aztec-starter locally
+- **Code Search** - Regex-based search across Noir contracts and TypeScript files
+- **Documentation Search** - Search Aztec docs by section
+- **Example Discovery** - List and read example contracts
+
+### Switching Versions
+
+The plugin defaults to a specific Aztec version. To switch versions:
+
+**Option 1: Use the `/aztec-version` command**
+
+```
+/aztec-version                    # Autodetect from project's Nargo.toml
+/aztec-version v3.0.0-devnet.7    # Use specific version
+```
+
+The command will automatically detect the Aztec version from your project's `Nargo.toml` if no version is specified.
+
+**Option 2: Call `aztec_sync_repos` directly**
+
+```
+aztec_sync_repos({ version: "v3.0.0-devnet.7", force: true })
+```
+
+**Check current version:**
+
+```
+aztec_status()
+```
+
+Find available versions at [aztec-packages tags](https://github.com/AztecProtocol/aztec-packages/tags).
+
 ## Features
 
 ### Slash Commands
@@ -83,6 +121,7 @@ See [NETWORK.md](./NETWORK.md) for detailed version differences.
 | `/aztec:explain <concept>`          | Explain an Aztec concept or pattern          |
 | `/aztec:deploy <contract>`          | Generate a TypeScript deployment script      |
 | `/aztec:generate-client <contract>` | Generate a TypeScript client class           |
+| `/aztec-version <version>`          | Switch the Aztec version for MCP server      |
 
 ### Agents
 
@@ -147,6 +186,14 @@ See [NETWORK.md](./NETWORK.md) for detailed version differences.
 - Jest E2E test generation
 - Sponsored fee testing patterns
 - Multi-user test scenarios
+
+#### Utilities
+
+**Aztec Version** (`aztec-version`)
+
+- Autodetects version from project's Nargo.toml
+- Switch the Aztec version used by the MCP server
+- Re-sync repositories to a different release tag
 
 ### Noir LSP Integration
 
@@ -229,11 +276,13 @@ aztec-plugin/
 │   │   ├── contract-client.md
 │   │   ├── wallet-setup.md
 │   │   └── transaction-patterns.md
-│   └── aztec-e2e-testing/   # E2E testing (NEW)
-│       ├── SKILL.md
-│       ├── jest-setup.md
-│       ├── test-patterns.md
-│       └── sponsored-testing.md
+│   ├── aztec-e2e-testing/   # E2E testing (NEW)
+│   │   ├── SKILL.md
+│   │   ├── jest-setup.md
+│   │   ├── test-patterns.md
+│   │   └── sponsored-testing.md
+│   └── aztec-version/       # Version switching (NEW)
+│       └── SKILL.md
 ├── CLAUDE.md                # Development guidelines
 └── README.md                # This file
 ```

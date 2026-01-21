@@ -362,27 +362,15 @@ The Aztec API changes significantly between versions. Always check the version f
 
    The version is the `tag` value (e.g., `v3.0.0-devnet.6-patch.1`).
 
-3. **Remember the version** for the session and include it in Context7 queries.
-
-### Version Context in Queries
-
-When querying Context7, **always include the detected version** in your query string:
-
-```
-# Good - includes version context
-query-docs: libraryId="/aztecprotocol/aztec-examples", query="PrivateSet storage pattern for Aztec v3.0.0-devnet.6"
-
-# Bad - no version context
-query-docs: libraryId="/aztecprotocol/aztec-examples", query="PrivateSet storage pattern"
-```
+3. **Remember the version** for the session and include it in searches.
 
 ### Version Mismatch Warning
 
 If you detect a version different from `v3.0.0-devnet.6-patch.1` (the version this plugin is configured for):
 
 - Warn the user that patterns in this guide may not match their version
-- Prioritize Context7 documentation over the examples in this file
-- Query with their specific version to get accurate syntax
+- Prioritize Aztec MCP server documentation over the examples in this file
+- Search with their specific version to get accurate syntax
 
 ### Quick Version Check Command
 
@@ -394,11 +382,20 @@ grep -r "aztec.*tag" **/Nargo.toml 2>/dev/null | head -1
 
 ## Looking Up Latest Documentation
 
-This plugin includes the Context7 MCP server for fetching up-to-date Aztec documentation.
+This plugin includes the `aztec-mcp-server` for accessing Aztec documentation, examples, and source code.
 
-### ⚠️ MANDATORY: Always Use Context7 For
+### Aztec MCP Server
 
-**You MUST query Context7 before responding** when the user asks about:
+The `aztec-mcp-server` clones Aztec repositories locally and provides tools for:
+
+- **Cloning repositories** - aztec-packages, aztec-examples, aztec-starter
+- **Searching code** - Regex-based search across contract code and documentation
+- **Browsing examples** - Navigate example smart contracts
+- **Reading files** - Direct file access from cloned repositories
+
+### ⚠️ MANDATORY: Always Use Aztec MCP Server For
+
+**You MUST use the Aztec MCP server before responding** when the user asks about:
 
 1. **Library/API documentation** - Function signatures, parameters, return types
 2. **Code generation** - Writing new contracts, functions, or TypeScript integrations
@@ -407,45 +404,40 @@ This plugin includes the Context7 MCP server for fetching up-to-date Aztec docum
 
 This ensures users always get the most up-to-date information, even if it differs from examples in this guide.
 
-### When to Use Context7
+### When to Use It
 
-Use Context7 when:
+Use the Aztec MCP server when:
 
 - You need the latest API details that may have changed
 - The user asks about features not covered in this guide
 - You want to verify syntax or patterns are current
 - You need working example contracts to reference
+- You need to search for specific code patterns across the Aztec codebase
 
-**How to use Context7 for Aztec:**
+### Switching Aztec Versions
 
-```
-# Always include the detected version in your queries!
-# Replace {VERSION} with the version from Nargo.toml (e.g., "v3.0.0-devnet.6")
+The plugin defaults to a specific Aztec version, but users can switch to a different version:
 
-# For reference implementations of common tasks (deployment, testing, TypeScript client)
-query-docs: libraryId="/aztecprotocol/aztec-starter", query="deployment script for Aztec {VERSION}"
+**Option 1: Use the `/aztec-version` command**
 
-# For example contracts (RECOMMENDED for learning patterns)
-query-docs: libraryId="/aztecprotocol/aztec-examples", query="token contract pattern Aztec {VERSION}"
-
-# For official Aztec docs
-query-docs: libraryId="/websites/aztec_network", query="PrivateSet storage Aztec {VERSION}"
-
-# For monorepo source code and implementation details
-query-docs: libraryId="/aztecprotocol/aztec-packages", query="MessageDelivery API Aztec {VERSION}"
+```bash
+/aztec-version                    # Autodetect from project's Nargo.toml
+/aztec-version v3.0.0-devnet.7    # Use specific version
 ```
 
-**When to use which source:**
+When no version is specified, the command will search for `Nargo.toml` files and extract the aztec dependency tag automatically.
 
-- `/aztecprotocol/aztec-starter` - **Reference implementations (53 snippets)** - Use for examples of deployment scripts, integration tests, TypeScript client code, devnet configuration, and other common development tasks
-- `/aztecprotocol/aztec-examples` - **Example contracts and sample code (284 snippets)** - Use this FIRST when looking for contract patterns, implementations, or learning how to build specific features
-- `/websites/aztec_network` - Official docs, tutorials, guides (7k+ snippets)
-- `/aztecprotocol/aztec-packages` - Source code, implementation details (27k+ snippets)
+**Option 2: Pass version to `aztec_sync_repos`**
+```
+aztec_sync_repos({ version: "v3.0.0-devnet.7", force: true })
+```
 
-**IMPORTANT:**
+The `force: true` parameter re-clones repos even if they exist, ensuring you get the new version.
 
-- When a user asks for examples, sample code, or "how do I implement X", always query `/aztecprotocol/aztec-examples` first before other sources.
-- **Always include the user's Aztec version** (from their Nargo.toml) in Context7 queries to get version-appropriate documentation.
+**Check current version:**
+```
+aztec_status()
+```
 
 ## Useful Resources
 

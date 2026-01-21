@@ -172,19 +172,25 @@ fn _burn_public(from: AztecAddress, amount: u64) {
 }
 ```
 
-## Using Context7 for Examples
+## Using Aztec MCP Server for Examples
 
-When you need working contract examples or implementation patterns, query Context7:
+When you need working contract examples or implementation patterns, use the Aztec MCP tools:
 
 ```
-# For reference implementations (deployment, testing, TypeScript client)
-query-docs: libraryId="/aztecprotocol/aztec-starter", query="<deployment, integration tests, or TypeScript>"
+# First sync repos if not already done
+aztec_sync_repos()
 
-# ALWAYS check aztec-examples first for contract patterns
-query-docs: libraryId="/aztecprotocol/aztec-examples", query="<specific pattern>"
+# Search for code patterns
+aztec_search_code({ query: "<pattern>", filePattern: "*.nr" })
 
-# For official docs
-query-docs: libraryId="/websites/aztec_network", query="<question>"
+# List available example contracts
+aztec_list_examples()
+
+# Read a specific example
+aztec_read_example({ name: "<example-name>" })
+
+# Search documentation
+aztec_search_docs({ query: "<question>" })
 ```
 
 **When to use which source:**
