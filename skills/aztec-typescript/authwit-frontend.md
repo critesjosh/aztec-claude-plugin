@@ -35,8 +35,7 @@ const witness = await wallet.createAuthWit(fromAddress, {
 // 4. Include witness in send() options
 await vaultContract.methods
   .deposit(amount)
-  .send({ from: wallet.address, authWitnesses: [witness] })
-  .wait();
+  .send({ from: wallet.address, authWitnesses: [witness], wait: { timeout: 600 } });
 ```
 
 ## Private vs Public AuthWit
@@ -51,7 +50,7 @@ await vaultContract.methods
 ```typescript
 // Private AuthWit - included with transaction
 const witness = await wallet.createAuthWit(fromAddress, { caller, action });
-await someAction.send({ authWitnesses: [witness] }).wait();
+await someAction.send({ authWitnesses: [witness], wait: { timeout: 600 } });
 ```
 
 ### Public AuthWit
@@ -63,10 +62,10 @@ await someAction.send({ authWitnesses: [witness] }).wait();
 ```typescript
 // Public AuthWit - registered on-chain first
 const innerHash = await action.computeInnerAuthWitHash();
-await wallet.setPublicAuthWit(innerHash, true).send().wait();
+await wallet.setPublicAuthWit(innerHash, true).send({ wait: { timeout: 600 } });
 
 // Later, the authorized action can execute
-await someAction.send().wait();
+await someAction.send({ wait: { timeout: 600 } });
 ```
 
 ## Multiple Authorizations
@@ -88,8 +87,7 @@ const witness2 = await wallet2.createAuthWit(from2Address, {
 // Include all witnesses in send() options
 await contract.methods
   .multiSourceOperation()
-  .send({ from, authWitnesses: [witness1, witness2] })
-  .wait();
+  .send({ from, authWitnesses: [witness1, witness2], wait: { timeout: 600 } });
 ```
 
 ## Nonce Management
@@ -124,7 +122,7 @@ const action = contract.methods.transfer(from, to, 100n, nonce);
 const witness = await wallet.createAuthWit(from, { caller, action });
 
 // Then calling with different amount - FAILS
-await caller.methods.doTransfer(from, to, 200n, nonce).send().wait();
+await caller.methods.doTransfer(from, to, 200n, nonce).send({ wait: { timeout: 600 } });
 ```
 
 **Fix:** Ensure action parameters exactly match the contract call.
@@ -156,8 +154,7 @@ const witness = await wallet.createAuthWit(fromAddress, {
 // Then contractB tries to use it - FAILS
 await contractB.methods
   .useAuth()
-  .send({ authWitnesses: [witness] })
-  .wait();
+  .send({ authWitnesses: [witness], wait: { timeout: 600 } });
 ```
 
 **Fix:** Ensure `caller` matches the contract that will execute the authorized action.

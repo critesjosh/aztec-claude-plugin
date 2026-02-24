@@ -10,7 +10,7 @@ When you want to TXE test a function that uses authwit.
 use token_contract::Token;
 use aztec::{
     oracle::random::random,
-    protocol_types::address::AztecAddress,
+    protocol::address::AztecAddress,
     test::helpers::{test_environment::TestEnvironment, authwit}
 };
 ```

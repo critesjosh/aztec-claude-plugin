@@ -28,8 +28,8 @@ Simplest way to add authwit checks. Specify which param is the "on behalf of" ad
 fn transfer_in_private(from: AztecAddress, to: AztecAddress, amount: u128, authwit_nonce: Field) {
     // If msg_sender != from, macro automatically validates authwit
     // The authwit is consumed (nullifier emitted) so it can't be reused
-    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery::CONSTRAINED_ONCHAIN);
-    self.storage.balances.at(to).add(amount).deliver(MessageDelivery::CONSTRAINED_ONCHAIN);
+    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+    self.storage.balances.at(to).add(amount).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 }
 ```
 
@@ -44,7 +44,7 @@ Users can cancel an authwit they've created by emitting its nullifier:
 ```rust
 #[external("private")]
 fn cancel_authwit(inner_hash: Field) {
-    let on_behalf_of = self.msg_sender().unwrap();
+    let on_behalf_of = self.msg_sender();
     let nullifier = compute_authwit_nullifier(on_behalf_of, inner_hash);
     self.context.push_nullifier(nullifier);
 }

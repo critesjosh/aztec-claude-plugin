@@ -8,7 +8,7 @@ Some imports you may need:
 ```rust
 use aztec::{
     oracle::random::random,
-    protocol_types::address::AztecAddress,
+    protocol::address::AztecAddress,
     test::helpers::test_environment::TestEnvironment,
 };
 use token::Token; // contract imports will vary based on what you're testing

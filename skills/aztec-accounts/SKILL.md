@@ -16,10 +16,11 @@ Create, deploy, and manage Aztec accounts with proper key management.
 ## Quick Start: Create and Deploy Account
 
 ```typescript
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { AccountManager } from "@aztec/aztec.js/wallet";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 
 // Generate new account keys
 const secretKey = Fr.random();
@@ -33,8 +34,9 @@ console.log(`Account address: ${account.address}`);
 // Deploy account (required before use)
 await (await account.getDeployMethod()).send({
     from: AztecAddress.ZERO,
-    fee: { paymentMethod: sponsoredPaymentMethod }
-}).wait({ timeout: 120000 });
+    fee: { paymentMethod: sponsoredPaymentMethod },
+    wait: { timeout: 120000 }
+});
 ```
 
 ## Account Types
@@ -69,15 +71,16 @@ Store these in your `.env` file for later recovery.
 
 ```typescript
 // Key types
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 
 // Account management
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 
 // Wallet
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
 // Fee payment
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 ```

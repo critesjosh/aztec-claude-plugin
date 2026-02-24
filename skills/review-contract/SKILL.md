@@ -87,6 +87,10 @@ This prevents false positives from outdated knowledge.
 | `#[external("utility")]` + `unconstrained` | Off-chain reads without proofs |
 | `#[view]` | Read-only, doesn't modify state |
 | `#[only_self]` | Only callable by the contract itself |
+| `#[internal("private")]` | Internal function callable only within the contract (private domain) |
+| `#[internal("public")]` | Internal function callable only within the contract (public domain) |
+| `#[authorize_once]` | Requires one-time authorization (authwit) to call |
+| `#[allow_phase_change]` | Allows function to be called across phase boundaries |
 
 #### Private State (Notes)
 
@@ -104,12 +108,12 @@ This prevents false positives from outdated knowledge.
 #### Access Control
 
 - [ ] Sensitive functions have proper access control
-- [ ] `context.msg_sender()` used correctly with `.unwrap()` in private
+- [ ] `self.msg_sender()` used correctly (returns AztecAddress directly in v4, no `.unwrap()` needed)
 - [ ] Admin functions protected appropriately
 
 #### Cross-Contract Calls
 
-- [ ] Proper use of `#[aztec(interface)]` for external contract calls
+- [ ] Interfaces are auto-generated in v4 (no manual `#[aztec(interface)]` needed)
 - [ ] Correct handling of return values
 - [ ] Privacy implications understood
 
@@ -193,4 +197,4 @@ During review, you may ask the user clarifying questions:
 
 4. **Race conditions between private and public state** - Private reads stale public state.
 
-5. **Missing `.unwrap()` on `msg_sender()` in private** - Will fail silently otherwise.
+5. **Using `.unwrap()` on `msg_sender()` in v4** - In v4, `self.msg_sender()` returns `AztecAddress` directly; `.unwrap()` is no longer needed.

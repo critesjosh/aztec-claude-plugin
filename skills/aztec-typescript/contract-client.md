@@ -6,11 +6,11 @@ Create type-safe wrapper classes for Aztec contract interaction.
 
 ```typescript
 import { MyContract } from "../artifacts/MyContract.js";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { TxStatus } from "@aztec/stdlib/tx";
 import type { Wallet } from "@aztec/aztec.js/wallet";
-import type { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import type { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
+import { type Logger, createLogger } from "@aztec/foundation/log";
 
 export class MyContractClient {
     private contract: MyContract;
@@ -57,10 +57,11 @@ export class MyContractClient {
 
         const tx = await this.contract.methods.create_item(itemId).send({
             from: sender,
-            fee: { paymentMethod: this.paymentMethod }
-        }).wait({ timeout: this.defaultTimeout });
+            fee: { paymentMethod: this.paymentMethod },
+            wait: { timeout: this.defaultTimeout }
+        });
 
-        if (tx.status !== TxStatus.SUCCESS) {
+        if (tx.status !== TxStatus.PROPOSED && tx.status !== TxStatus.FINALIZED) {
             throw new Error(`create_item failed: ${tx.status}`);
         }
 
@@ -79,10 +80,11 @@ export class MyContractClient {
 
         const tx = await this.contract.methods.transfer(to, amount).send({
             from: sender,
-            fee: { paymentMethod: this.paymentMethod }
-        }).wait({ timeout: this.defaultTimeout });
+            fee: { paymentMethod: this.paymentMethod },
+            wait: { timeout: this.defaultTimeout }
+        });
 
-        if (tx.status !== TxStatus.SUCCESS) {
+        if (tx.status !== TxStatus.PROPOSED && tx.status !== TxStatus.FINALIZED) {
             throw new Error(`transfer failed: ${tx.status}`);
         }
 
@@ -146,8 +148,9 @@ export class MyContractClient {
     ): Promise<MyContractClient> {
         const contract = await MyContract.deploy(wallet, admin).send({
             from: admin,
-            fee: { paymentMethod }
-        }).deployed({ timeout });
+            fee: { paymentMethod },
+            wait: { timeout, returnReceipt: true }
+        });
 
         return new MyContractClient(
             contract.address,
@@ -206,10 +209,11 @@ async createItem(itemId: bigint, sender: AztecAddress): Promise<void> {
     return safeCall('create_item', async () => {
         const tx = await this.contract.methods.create_item(itemId).send({
             from: sender,
-            fee: { paymentMethod: this.paymentMethod }
-        }).wait({ timeout: this.defaultTimeout });
+            fee: { paymentMethod: this.paymentMethod },
+            wait: { timeout: this.defaultTimeout }
+        });
 
-        if (tx.status !== TxStatus.SUCCESS) {
+        if (tx.status !== TxStatus.PROPOSED && tx.status !== TxStatus.FINALIZED) {
             throw new ContractError(
                 `Transaction failed`,
                 'create_item',
@@ -238,7 +242,7 @@ async function batchTransfers(
 
 ```typescript
 // types.ts
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 
 export interface TransferParams {
     to: AztecAddress;

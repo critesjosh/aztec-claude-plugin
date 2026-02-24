@@ -6,16 +6,14 @@ Connect to Aztec nodes and initialize wallets for contract interaction.
 
 ```typescript
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
-import { TestWallet } from '@aztec/test-wallet/server';
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
 
-export async function setupWallet(): Promise<TestWallet> {
+export async function setupWallet(): Promise<EmbeddedWallet> {
     const nodeUrl = 'http://localhost:8080';  // or devnet URL
     const node = createAztecNodeClient(nodeUrl);
 
-    // proverEnabled: false for local, true for devnet
-    const proverEnabled = false;
-
-    const wallet = await TestWallet.create(node, { proverEnabled });
+    // ephemeral: true for local/dev, false for production
+    const wallet = await EmbeddedWallet.create(node, { ephemeral: true });
     return wallet;
 }
 ```
@@ -25,16 +23,16 @@ export async function setupWallet(): Promise<TestWallet> {
 ```typescript
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
 import { getAztecNodeUrl, getEnv } from '../config/config.js';
-import { TestWallet } from '@aztec/test-wallet/server';
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
 
-export async function setupWallet(): Promise<TestWallet> {
+export async function setupWallet(): Promise<EmbeddedWallet> {
     const nodeUrl = getAztecNodeUrl();
     const node = createAztecNodeClient(nodeUrl);
 
-    // Enable prover on non-local networks
-    const proverEnabled = getEnv() !== 'local-network';
+    // Use ephemeral mode for local development
+    const ephemeral = getEnv() === 'local-network';
 
-    const wallet = await TestWallet.create(node, { proverEnabled });
+    const wallet = await EmbeddedWallet.create(node, { ephemeral });
     return wallet;
 }
 ```
@@ -45,15 +43,15 @@ For persistent state across sessions:
 
 ```typescript
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
-import { TestWallet } from '@aztec/test-wallet/server';
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
 import path from 'path';
 
-export async function setupWalletWithStore(): Promise<TestWallet> {
+export async function setupWalletWithStore(): Promise<EmbeddedWallet> {
     const nodeUrl = getAztecNodeUrl();
     const node = createAztecNodeClient(nodeUrl);
 
-    const wallet = await TestWallet.create(node, {
-        proverEnabled: false,
+    const wallet = await EmbeddedWallet.create(node, {
+        ephemeral: true,
         dataDirectory: path.resolve(process.cwd(), './store')
     });
 
@@ -67,12 +65,12 @@ Before interacting with contracts, register them with the wallet:
 
 ```typescript
 import { MyContract } from "../artifacts/MyContract.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 
-async function setupContracts(wallet: TestWallet) {
+async function setupContracts(wallet: EmbeddedWallet) {
     // Register SponsoredFPC for fee payment
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
 
     // Register your contract (if connecting to existing)
     const myContract = MyContract.at(contractAddress, wallet);
@@ -87,7 +85,7 @@ async function setupContracts(wallet: TestWallet) {
 Register accounts that will send transactions:
 
 ```typescript
-async function setupSenders(wallet: TestWallet, accounts: AccountManager[]) {
+async function setupSenders(wallet: EmbeddedWallet, accounts: AccountManager[]) {
     for (const account of accounts) {
         await wallet.registerSender(account.address);
     }
@@ -98,14 +96,14 @@ async function setupSenders(wallet: TestWallet, accounts: AccountManager[]) {
 
 ```typescript
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
-import { TestWallet } from '@aztec/test-wallet/server';
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { type Logger, createLogger } from "@aztec/foundation/log";
 import { getAztecNodeUrl, getEnv, getTimeouts } from '../config/config.js';
 
 export interface WalletContext {
-    wallet: TestWallet;
+    wallet: EmbeddedWallet;
     paymentMethod: SponsoredFeePaymentMethod;
     timeouts: {
         deployTimeout: number;
@@ -121,14 +119,14 @@ export async function initializeWallet(): Promise<WalletContext> {
     // Create wallet
     const nodeUrl = getAztecNodeUrl();
     const node = createAztecNodeClient(nodeUrl);
-    const proverEnabled = getEnv() !== 'local-network';
+    const ephemeral = getEnv() === 'local-network';
 
-    const wallet = await TestWallet.create(node, { proverEnabled });
+    const wallet = await EmbeddedWallet.create(node, { ephemeral });
     logger.info(`Connected to node at ${nodeUrl}`);
 
     // Setup sponsored fee payment
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     logger.info('Fee payment configured');
 
@@ -137,6 +135,21 @@ export async function initializeWallet(): Promise<WalletContext> {
         paymentMethod,
         timeouts: getTimeouts()
     };
+}
+```
+
+## SponsoredFPC Helper
+
+```typescript
+import { getContractInstanceFromInstantiationParams } from '@aztec/aztec.js/contracts';
+import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
+import { SPONSORED_FPC_SALT } from '@aztec/constants';
+import { Fr } from '@aztec/aztec.js/fields';
+
+export async function getSponsoredFPCInstance() {
+  return await getContractInstanceFromInstantiationParams(
+    SponsoredFPCContractArtifact, { salt: new Fr(SPONSORED_FPC_SALT) }
+  );
 }
 ```
 
@@ -153,14 +166,16 @@ async function main() {
     // Deploy or connect to contract
     const contract = await MyContract.deploy(wallet, account.address).send({
         from: account.address,
-        fee: { paymentMethod }
-    }).deployed({ timeout: timeouts.deployTimeout });
+        fee: { paymentMethod },
+        wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
+    });
 
     // Interact
     await contract.methods.myMethod(args).send({
         from: account.address,
-        fee: { paymentMethod }
-    }).wait({ timeout: timeouts.txTimeout });
+        fee: { paymentMethod },
+        wait: { timeout: timeouts.txTimeout }
+    });
 }
 ```
 
@@ -171,7 +186,7 @@ async function main() {
 ```typescript
 const config = {
     nodeUrl: 'http://localhost:8080',
-    proverEnabled: false,
+    ephemeral: true,
     timeouts: {
         deployTimeout: 120000,  // 2 min
         txTimeout: 60000,       // 1 min
@@ -185,7 +200,7 @@ const config = {
 ```typescript
 const config = {
     nodeUrl: 'https://devnet-6.aztec-labs.com',
-    proverEnabled: true,
+    ephemeral: false,
     timeouts: {
         deployTimeout: 1200000,  // 20 min
         txTimeout: 180000,       // 3 min
@@ -197,7 +212,7 @@ const config = {
 ## Error Handling
 
 ```typescript
-async function setupWalletSafe(): Promise<TestWallet | null> {
+async function setupWalletSafe(): Promise<EmbeddedWallet | null> {
     try {
         return await setupWallet();
     } catch (error) {

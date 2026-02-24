@@ -9,7 +9,7 @@ Public state is stored as raw fields on-chain (like Ethereum storage). To store 
 ## Defining a Public Struct
 
 ```rust
-use dep::aztec::protocol_types::{
+use aztec::protocol::{
     address::AztecAddress,
     traits::{Deserialize, Packable, Serialize},
 };

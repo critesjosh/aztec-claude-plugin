@@ -12,7 +12,7 @@ pub contract MyContract {
             functions::{external, initializer, only_self, view},
             storage::storage,
         },
-        protocol_types::address::AztecAddress,
+        protocol::address::AztecAddress,
         state_vars::{PublicMutable, Map},
     };
 
@@ -80,7 +80,7 @@ Executes client-side, generates proof. Can access private notes and public immut
 ```rust
 #[external("private")]
 fn transfer(to: AztecAddress, amount: u128) {
-    let from = self.msg_sender().unwrap();
+    let from = self.msg_sender();
     // ... work with private notes
 }
 ```
@@ -128,6 +128,16 @@ fn get_admin() -> AztecAddress {
 }
 ```
 
+### Additional Function Attributes (v4)
+
+| Attribute | Purpose |
+|-----------|---------|
+| `#[internal("private")]` | Only callable by the contract itself (private context) |
+| `#[internal("public")]` | Only callable by the contract itself (public context) |
+| `#[authorize_once]` | Requires authorization via authwit, consumed after one use |
+| `#[allow_phase_change]` | Allows function to transition between private and public phases (used in FPC) |
+| `#[contract_library_method]` | Marks a function as a helper that doesn't generate an ABI entry |
+
 ## Common Imports
 
 ```rust
@@ -142,9 +152,9 @@ use aztec::{
     // Context types
     context::{PrivateContext, PublicContext},
     // Protocol types
-    protocol_types::{address::AztecAddress, traits::ToField},
+    protocol::{address::AztecAddress, traits::ToField},
     // State variables (private types must be wrapped in Owned)
-    state_vars::{PublicMutable, PublicImmutable, PrivateSet, PrivateImmutable, PrivateMutable, Map, Owned},
+    state_vars::{PublicMutable, PublicImmutable, PrivateSet, PrivateImmutable, PrivateMutable, SinglePrivateMutable, SinglePrivateImmutable, SingleUseClaim, Map, Owned},
     // Notes
     note::note_getter_options::NoteGetterOptions,
     // Messages

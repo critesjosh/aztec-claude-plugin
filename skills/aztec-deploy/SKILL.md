@@ -20,11 +20,11 @@ Navigate to the appropriate section based on your task:
 
 ```typescript
 import { MyContract } from "../src/artifacts/MyContract.js";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { type Logger, createLogger } from "@aztec/foundation/log";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 import { getTimeouts } from "../config/config.js";
 
@@ -36,17 +36,18 @@ async function main() {
 
     // 2. Setup sponsored fee payment
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // 3. Deploy account (or use existing)
     const account = await deploySchnorrAccount(wallet);
 
     // 4. Deploy contract
-    const contract = await MyContract.deploy(wallet, account.address).send({
+    const { contract } = await MyContract.deploy(wallet, account.address).send({
         from: account.address,
-        fee: { paymentMethod }
-    }).deployed({ timeout: getTimeouts().deployTimeout });
+        fee: { paymentMethod },
+        wait: { timeout: getTimeouts().deployTimeout, returnReceipt: true }
+    });
 
     logger.info(`Contract deployed at: ${contract.address}`);
 }
@@ -67,19 +68,20 @@ main().catch(console.error);
 ```typescript
 // Wallet and node connection
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
-import { TestWallet } from '@aztec/test-wallet/server';
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
 
 // Account management
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { AccountManager } from "@aztec/aztec.js/wallet";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 
 // Fee payment
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 
 // Logging
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { type Logger, createLogger } from "@aztec/foundation/log";
 ```
 
 ## Using Aztec MCP Server

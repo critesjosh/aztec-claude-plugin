@@ -17,7 +17,7 @@ Configure your Aztec project for different deployment targets.
   },
   "settings": {
     "skipLocalNetwork": false,
-    "version": "3.0.0-devnet.6-patch.1"
+    "version": "4.0.0-devnet.2-patch.1"
   },
   "timeouts": {
     "deployTimeout": 120000,
@@ -40,7 +40,7 @@ Configure your Aztec project for different deployment targets.
   },
   "settings": {
     "skipLocalNetwork": true,
-    "version": "3.0.0-devnet.6-patch.1"
+    "version": "4.0.0-devnet.2-patch.1"
   },
   "timeouts": {
     "deployTimeout": 1200000,
@@ -235,7 +235,7 @@ import { getTimeouts } from '../config/config.js';
 bash -i <(curl -s https://install.aztec.network)
 
 # Set version and update
-export VERSION=3.0.0-devnet.6-patch.1
+export VERSION=4.0.0-devnet.2-patch.1
 aztec-up
 
 # Start local network
