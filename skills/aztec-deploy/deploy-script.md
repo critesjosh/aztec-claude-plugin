@@ -6,13 +6,14 @@ Complete TypeScript deployment script with all components.
 
 ```typescript
 import { MyContract } from "../src/artifacts/MyContract.js";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { type Logger, createLogger } from "@aztec/foundation/log";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { getTimeouts } from "../config/config.js";
 
 async function main() {
@@ -36,7 +37,7 @@ async function main() {
     logger.info(`Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
 
     logger.info('Registering sponsored FPC contract with wallet...');
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     logger.info('Sponsored fee payment method configured');
 
@@ -63,8 +64,9 @@ async function main() {
     const deployMethod = await account.getDeployMethod();
     const accountTx = await deployMethod.send({
         from: AztecAddress.ZERO,
-        fee: { paymentMethod: sponsoredPaymentMethod }
-    }).wait({ timeout: timeouts.deployTimeout });
+        fee: { paymentMethod: sponsoredPaymentMethod },
+        wait: { timeout: timeouts.deployTimeout }
+    });
 
     logger.info(`Account deployed! Tx hash: ${accountTx.txHash}`);
 
@@ -77,13 +79,14 @@ async function main() {
     // Replace with your contract's constructor arguments
     const constructorArgs = [account.address]; // Example: admin address
 
-    const contractDeployMethod = MyContract.deploy(wallet, ...constructorArgs).send({
-        from: account.address,
-        fee: { paymentMethod: sponsoredPaymentMethod }
-    });
+    const contractDeployMethod = MyContract.deploy(wallet, ...constructorArgs);
 
     logger.info('Waiting for deployment transaction to be mined...');
-    const contract = await contractDeployMethod.deployed({ timeout: timeouts.deployTimeout });
+    const { contract } = await contractDeployMethod.send({
+        from: account.address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+        wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
+    });
 
     logger.info(`Contract deployed successfully!`);
     logger.info(`Contract address: ${contract.address}`);
@@ -123,14 +126,13 @@ main().catch((error) => {
 
 ```typescript
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
-import { getAztecNodeUrl, getEnv } from '../config/config.js';
-import { TestWallet } from '@aztec/test-wallet/server';
+import { getAztecNodeUrl } from '../config/config.js';
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
 
-export async function setupWallet(): Promise<TestWallet> {
+export async function setupWallet(): Promise<EmbeddedWallet> {
     const nodeUrl = getAztecNodeUrl();
     const node = createAztecNodeClient(nodeUrl);
-    const proverEnabled = getEnv() !== 'local-network';
-    const wallet = await TestWallet.create(node, { proverEnabled });
+    const wallet = await EmbeddedWallet.create(node, { ephemeral: true });
     return wallet;
 }
 ```
@@ -138,33 +140,33 @@ export async function setupWallet(): Promise<TestWallet> {
 ### sponsored_fpc.ts
 
 ```typescript
-import { getProtocolContractAddress } from "@aztec/stdlib/protocol-contracts";
-import { ProtocolContractAddresses } from "@aztec/stdlib/client";
-import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
+import { getContractInstanceFromInstantiationParams } from '@aztec/aztec.js/contracts';
+import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
+import { SPONSORED_FPC_SALT } from '@aztec/constants';
+import { Fr } from '@aztec/aztec.js/fields';
 
-export async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAddress> {
-    const fpcAddress = getProtocolContractAddress(ProtocolContractAddresses.SponsoredFPC);
-    return {
-        address: fpcAddress,
-        // Additional instance properties as needed
-    } as ContractInstanceWithAddress;
+export async function getSponsoredFPCInstance() {
+    return await getContractInstanceFromInstantiationParams(
+        SponsoredFPCContractArtifact, { salt: new Fr(SPONSORED_FPC_SALT) }
+    );
 }
 ```
 
 ### deploy_account.ts
 
 ```typescript
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { getSponsoredFPCInstance } from "./sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
+import { type Logger, createLogger } from "@aztec/foundation/log";
 import { setupWallet } from "./setup_wallet.js";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { AccountManager } from "@aztec/aztec.js/wallet";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
-export async function deploySchnorrAccount(wallet?: TestWallet): Promise<AccountManager> {
+export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<AccountManager> {
     const logger: Logger = createLogger('aztec:deploy:account');
     logger.info('Starting Schnorr account deployment...');
 
@@ -184,15 +186,16 @@ export async function deploySchnorrAccount(wallet?: TestWallet): Promise<Account
 
     // Setup sponsored FPC
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await activeWallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await activeWallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Deploy account
     const deployMethod = await account.getDeployMethod();
     const tx = await deployMethod.send({
         from: AztecAddress.ZERO,
-        fee: { paymentMethod: sponsoredPaymentMethod }
-    }).wait({ timeout: 120000 });
+        fee: { paymentMethod: sponsoredPaymentMethod },
+        wait: { timeout: 120000 }
+    });
 
     logger.info(`Account deployment successful! Tx hash: ${tx.txHash}`);
     return account;

@@ -7,17 +7,15 @@ Common patterns for Aztec transaction handling in TypeScript.
 ```typescript
 import { TxStatus } from "@aztec/stdlib/tx";
 
-// 1. Call method
-const txPromise = contract.methods.myMethod(args).send({
+// 1. Call method and wait for confirmation (v4 inline wait)
+const tx = await contract.methods.myMethod(args).send({
     from: senderAddress,
-    fee: { paymentMethod }
+    fee: { paymentMethod },
+    wait: { timeout: 60000 }
 });
 
-// 2. Wait for confirmation
-const tx = await txPromise.wait({ timeout: 60000 });
-
-// 3. Check status
-if (tx.status === TxStatus.SUCCESS) {
+// 2. Check status (v4 has multiple success statuses)
+if (tx.status === TxStatus.PROPOSED || tx.status === TxStatus.FINALIZED) {
     console.log('Transaction successful');
 } else {
     console.error(`Transaction failed: ${tx.status}`);
@@ -27,16 +25,23 @@ if (tx.status === TxStatus.SUCCESS) {
 ## Transaction Options
 
 ```typescript
+// v4 SendOptions includes inline wait configuration
 interface SendOptions {
     from: AztecAddress;    // Sender address
     fee: {
         paymentMethod: FeePaymentMethod;
     };
+    wait?: {
+        timeout: number;       // Max wait time in ms
+        returnReceipt?: boolean; // For deployments, returns contract instance
+    };
 }
 
-interface WaitOptions {
-    timeout: number;       // Max wait time in ms
-}
+// Usage: wait options are now inline with send
+const receipt = await contract.methods.transfer(to, amount).send({
+    fee: { paymentMethod },
+    wait: { timeout: 600 }  // Wait options are now inline
+});
 ```
 
 ## Public Function Calls
@@ -47,14 +52,16 @@ Public functions execute on-chain with visible state changes:
 // Create a new item (public state change)
 const tx = await contract.methods.create_item(itemId).send({
     from: account.address,
-    fee: { paymentMethod }
-}).wait({ timeout: 60000 });
+    fee: { paymentMethod },
+    wait: { timeout: 60000 }
+});
 
 // Update public storage
 const tx = await contract.methods.set_value(newValue).send({
     from: admin.address,
-    fee: { paymentMethod }
-}).wait({ timeout: 60000 });
+    fee: { paymentMethod },
+    wait: { timeout: 60000 }
+});
 ```
 
 ## Private Function Calls
@@ -65,14 +72,16 @@ Private functions execute client-side, creating encrypted notes:
 // Private transfer (creates notes)
 const tx = await contract.methods.transfer(recipient, amount).send({
     from: sender.address,
-    fee: { paymentMethod }
-}).wait({ timeout: 60000 });
+    fee: { paymentMethod },
+    wait: { timeout: 60000 }
+});
 
 // Store private data
 const tx = await contract.methods.store_secret(secretData).send({
     from: account.address,
-    fee: { paymentMethod }
-}).wait({ timeout: 60000 });
+    fee: { paymentMethod },
+    wait: { timeout: 60000 }
+});
 ```
 
 ## View/Simulate Functions
@@ -122,8 +131,9 @@ async function sendWithRetry<T>(
 const tx = await sendWithRetry(async () => {
     return await contract.methods.myMethod(args).send({
         from: account.address,
-        fee: { paymentMethod }
-    }).wait({ timeout: 60000 });
+        fee: { paymentMethod },
+        wait: { timeout: 60000 }
+    });
 });
 ```
 
@@ -138,8 +148,8 @@ async function waitForAll(
 
 // Usage
 const txPromises = [
-    contract.methods.action1(args1).send({ from, fee }).wait({ timeout }),
-    contract.methods.action2(args2).send({ from, fee }).wait({ timeout }),
+    contract.methods.action1(args1).send({ from, fee, wait: { timeout } }),
+    contract.methods.action2(args2).send({ from, fee, wait: { timeout } }),
 ];
 
 const receipts = await waitForAll(txPromises);
@@ -165,9 +175,9 @@ async function executeSequential(
 
 // Usage
 const receipts = await executeSequential([
-    () => contract.methods.step1().send({ from, fee }).wait({ timeout }),
-    () => contract.methods.step2().send({ from, fee }).wait({ timeout }),
-    () => contract.methods.step3().send({ from, fee }).wait({ timeout }),
+    () => contract.methods.step1().send({ from, fee, wait: { timeout } }),
+    () => contract.methods.step2().send({ from, fee, wait: { timeout } }),
+    () => contract.methods.step3().send({ from, fee, wait: { timeout } }),
 ]);
 ```
 
@@ -179,8 +189,9 @@ const receipts = await executeSequential([
 try {
     await contract.methods.transfer(to, amount).send({
         from: account.address,
-        fee: { paymentMethod }
-    }).wait({ timeout: 60000 });
+        fee: { paymentMethod },
+        wait: { timeout: 60000 }
+    });
 } catch (error) {
     if (error.message.includes('insufficient balance')) {
         console.error('Not enough tokens for transfer');
@@ -201,12 +212,24 @@ import { TxStatus } from "@aztec/stdlib/tx";
 
 const tx = await contract.methods.myMethod(args).send({
     from: account.address,
-    fee: { paymentMethod }
-}).wait({ timeout: 60000 });
+    fee: { paymentMethod },
+    wait: { timeout: 60000 }
+});
 
+// v4 has multiple success statuses representing tx lifecycle stages:
+// PROPOSED -> CHECKPOINTED -> PROVEN -> FINALIZED
 switch (tx.status) {
-    case TxStatus.SUCCESS:
-        console.log('Transaction succeeded');
+    case TxStatus.PROPOSED:
+        console.log('Transaction proposed (included in pending block)');
+        break;
+    case TxStatus.CHECKPOINTED:
+        console.log('Transaction checkpointed on L1');
+        break;
+    case TxStatus.PROVEN:
+        console.log('Transaction proof verified');
+        break;
+    case TxStatus.FINALIZED:
+        console.log('Transaction fully finalized on L1');
         break;
     case TxStatus.DROPPED:
         console.error('Transaction was dropped');
@@ -222,26 +245,21 @@ switch (tx.status) {
 ## Contract Deployment Pattern
 
 ```typescript
+import type { EmbeddedWallet } from "@aztec/wallets/embedded";
+
 async function deployContract(
-    wallet: TestWallet,
+    wallet: EmbeddedWallet,
     admin: AztecAddress,
     paymentMethod: SponsoredFeePaymentMethod,
     timeout: number
 ): Promise<MyContract> {
-    const deployMethod = MyContract.deploy(wallet, admin).send({
+    const contract = await MyContract.deploy(wallet, admin).send({
         from: admin,
-        fee: { paymentMethod }
+        fee: { paymentMethod },
+        wait: { timeout, returnReceipt: true }
     });
 
-    const contract = await deployMethod.deployed({ timeout });
-
-    // Get instance data for recovery
-    const instance = await deployMethod.getInstance();
-    if (instance) {
-        console.log(`Contract deployed at: ${contract.address}`);
-        console.log(`Salt: ${instance.salt}`);
-        console.log(`Deployer: ${instance.deployer}`);
-    }
+    console.log(`Contract deployed at: ${contract.address}`);
 
     return contract;
 }
@@ -261,10 +279,11 @@ async function sendTx(
 ) {
     const tx = await contract.methods[methodName](...args).send({
         from,
-        fee: { paymentMethod }
-    }).wait({ timeout });
+        fee: { paymentMethod },
+        wait: { timeout }
+    });
 
-    if (tx.status !== TxStatus.SUCCESS) {
+    if (tx.status !== TxStatus.PROPOSED && tx.status !== TxStatus.FINALIZED) {
         throw new Error(`${methodName} failed: ${tx.status}`);
     }
 

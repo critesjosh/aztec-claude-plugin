@@ -36,7 +36,7 @@ fn transfer(amount: u64) { ... }  // Don't do this
 - Note commitments
 
 ```rust
-use aztec::protocol_types::traits::ToField;
+use aztec::protocol::traits::ToField;
 
 let hash: Field = some_value.to_field();
 let id: Field = Fr::random();  // In tests
@@ -55,7 +55,7 @@ let id: Field = Fr::random();  // In tests
 32-byte address for Aztec contracts and accounts.
 
 ```rust
-use aztec::protocol_types::address::AztecAddress;
+use aztec::protocol::address::AztecAddress;
 
 // In storage
 owner: PublicMutable<AztecAddress, Context>,
@@ -73,7 +73,7 @@ assert(!address.is_zero(), "Invalid address");
 20-byte Ethereum address for L1 interactions.
 
 ```rust
-use aztec::protocol_types::address::EthAddress;
+use aztec::protocol::address::EthAddress;
 
 // For portal contracts, L1 bridges
 l1_contract: PublicImmutable<EthAddress, Context>,
@@ -126,7 +126,7 @@ fn get_name() -> FieldCompressedString {
 **Nargo.toml dependency:**
 
 ```toml
-compressed_string = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "compressed-string" }
+compressed_string = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.0.0-devnet.2-patch.1", directory = "compressed-string" }
 ```
 
 ## Custom Structs
@@ -136,7 +136,7 @@ compressed_string = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = 
 Custom structs need specific trait derivations:
 
 ```rust
-use aztec::protocol_types::traits::{Deserialize, Serialize, Packable};
+use aztec::protocol::traits::{Deserialize, Serialize, Packable};
 
 #[derive(Eq, Serialize, Deserialize, Packable)]
 struct UserData {
@@ -179,7 +179,7 @@ Notes are encrypted data for private state. Two macros are available:
 **`#[note]`** - Simple notes (macro generates `NoteHash` implementation):
 
 ```rust
-use aztec::{macros::notes::note, protocol_types::traits::{Deserialize, Packable, Serialize}};
+use aztec::{macros::notes::note, protocol::traits::{Deserialize, Packable, Serialize}};
 
 #[derive(Deserialize, Eq, Packable, Serialize)]
 #[note]
@@ -266,8 +266,8 @@ use balance_set::BalanceSet;
 balances: Owned<BalanceSet<Context>, Context>,
 
 // Usage
-self.storage.balances.at(owner).add(amount).deliver(MessageDelivery::CONSTRAINED_ONCHAIN);
-self.storage.balances.at(owner).sub(amount).deliver(MessageDelivery::CONSTRAINED_ONCHAIN);
+self.storage.balances.at(owner).add(amount).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+self.storage.balances.at(owner).sub(amount).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 ```
 
 See [Notes](./notes.md) for detailed note patterns.
@@ -333,7 +333,7 @@ let allowance = self.storage.allowances.at(owner).at(spender).read();
 When data exceeds 31 bytes per field (e.g., ECDSA public keys), implement custom `Packable`:
 
 ```rust
-use aztec::protocol_types::traits::Packable;
+use aztec::protocol::traits::Packable;
 
 // 64-byte ECDSA public key (needs 3 fields)
 struct ECDSAPublicKey {
@@ -363,7 +363,7 @@ impl Packable<3> for ECDSAPublicKey {
 ### To/From Field
 
 ```rust
-use aztec::protocol_types::traits::ToField;
+use aztec::protocol::traits::ToField;
 
 // To Field
 let field_value: Field = address.to_field();

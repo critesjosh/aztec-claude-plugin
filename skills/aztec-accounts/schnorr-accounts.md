@@ -7,7 +7,8 @@ Schnorr accounts are the recommended account type for Aztec development.
 ### Step 1: Generate Keys
 
 ```typescript
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 
 // Generate random keys
 const secretKey = Fr.random();      // Encryption key
@@ -18,7 +19,7 @@ const salt = Fr.random();           // Address derivation salt
 ### Step 2: Create Account Manager
 
 ```typescript
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
 const wallet = await setupWallet();
 const account = await wallet.createSchnorrAccount(secretKey, salt, signingKey);
@@ -32,7 +33,7 @@ Accounts must be deployed before they can send transactions:
 
 ```typescript
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 
 // Setup fee payment
 const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
@@ -43,8 +44,9 @@ const deployMethod = await account.getDeployMethod();
 // Deploy
 const tx = await deployMethod.send({
     from: AztecAddress.ZERO,  // No sender for account deployment
-    fee: { paymentMethod }
-}).wait({ timeout: 120000 });
+    fee: { paymentMethod },
+    wait: { timeout: 120000 }
+});
 
 console.log(`Account deployed! Tx: ${tx.txHash}`);
 ```
@@ -52,15 +54,16 @@ console.log(`Account deployed! Tx: ${tx.txHash}`);
 ## Complete Account Creation Utility
 
 ```typescript
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { getSponsoredFPCInstance } from "./sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { setupWallet } from "./setup_wallet.js";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { AccountManager } from "@aztec/aztec.js/wallet";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
 export interface AccountCredentials {
     secretKey: Fr;
@@ -70,7 +73,7 @@ export interface AccountCredentials {
 }
 
 export async function createAndDeployAccount(
-    wallet?: TestWallet
+    wallet?: EmbeddedWallet
 ): Promise<{ account: AccountManager; credentials: AccountCredentials }> {
     const logger = createLogger('aztec:account');
     logger.info('Creating new Schnorr account...');
@@ -100,8 +103,9 @@ export async function createAndDeployAccount(
     const deployMethod = await account.getDeployMethod();
     const tx = await deployMethod.send({
         from: AztecAddress.ZERO,
-        fee: { paymentMethod }
-    }).wait({ timeout: 120000 });
+        fee: { paymentMethod },
+        wait: { timeout: 120000 }
+    });
 
     logger.info(`Account deployed! Tx: ${tx.txHash}`);
 
@@ -122,7 +126,7 @@ export async function createAndDeployAccount(
 For testing with multiple users:
 
 ```typescript
-async function createTestAccounts(wallet: TestWallet, count: number) {
+async function createTestAccounts(wallet: EmbeddedWallet, count: number) {
     const accounts: AccountManager[] = [];
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
@@ -135,8 +139,9 @@ async function createTestAccounts(wallet: TestWallet, count: number) {
 
         await (await account.getDeployMethod()).send({
             from: AztecAddress.ZERO,
-            fee: { paymentMethod }
-        }).wait({ timeout: 120000 });
+            fee: { paymentMethod },
+            wait: { timeout: 120000 }
+        });
 
         // Register account as sender
         await wallet.registerSender(account.address);
@@ -146,6 +151,51 @@ async function createTestAccounts(wallet: TestWallet, count: number) {
 
     return accounts;
 }
+```
+
+## Batch Account Generation
+
+Generate multiple Schnorr accounts in parallel for efficient setup:
+
+```typescript
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
+import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { AccountManager } from "@aztec/aztec.js/wallet";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
+
+export async function generateSchnorrAccounts(
+    wallet: EmbeddedWallet,
+    count: number,
+    paymentMethod: SponsoredFeePaymentMethod
+): Promise<AccountManager[]> {
+    // Step 1: Create all account managers (fast, no network)
+    const accountPromises = Array.from({ length: count }, async () => {
+        const secretKey = Fr.random();
+        const signingKey = GrumpkinScalar.random();
+        const salt = Fr.random();
+        return wallet.createSchnorrAccount(secretKey, salt, signingKey);
+    });
+    const accounts = await Promise.all(accountPromises);
+
+    // Step 2: Deploy all accounts (sends transactions)
+    for (const account of accounts) {
+        await (await account.getDeployMethod()).send({
+            from: AztecAddress.ZERO,
+            fee: { paymentMethod },
+            wait: { timeout: 120000 }
+        });
+        await wallet.registerSender(account.address);
+    }
+
+    return accounts;
+}
+
+// Usage
+const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
+const accounts = await generateSchnorrAccounts(wallet, 3, paymentMethod);
+console.log(`Created ${accounts.length} accounts`);
 ```
 
 ## Registering Accounts
@@ -159,8 +209,9 @@ await wallet.registerSender(account.address);
 // Now the wallet can send transactions from this account
 await contract.methods.myMethod(args).send({
     from: account.address,
-    fee: { paymentMethod }
-}).wait();
+    fee: { paymentMethod },
+    wait: { timeout: 600 }
+});
 ```
 
 ## Key Responsibilities

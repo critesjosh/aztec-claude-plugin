@@ -24,7 +24,7 @@ Aztec provides a Noir-native testing framework using `TestEnvironment` that allo
 
 ```rust
 use aztec::{
-    protocol_types::address::AztecAddress,
+    protocol::address::AztecAddress,
     test::helpers::test_environment::TestEnvironment,
 };
 

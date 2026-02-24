@@ -16,12 +16,13 @@ SALT=0xabcdef1234567890...
 ### Recovery Function
 
 ```typescript
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { AccountManager } from "@aztec/aztec.js/wallet";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
 export async function recoverAccountFromEnv(
-    wallet: TestWallet
+    wallet: EmbeddedWallet
 ): Promise<AccountManager> {
     // Load from environment
     const secretKey = Fr.fromString(process.env.SECRET!);
@@ -47,7 +48,7 @@ export interface AccountCredentials {
 }
 
 export async function recoverAccount(
-    wallet: TestWallet,
+    wallet: EmbeddedWallet,
     credentials: AccountCredentials
 ): Promise<AccountManager> {
     const secretKey = Fr.fromString(credentials.secretKey);
@@ -68,17 +69,18 @@ const account = await recoverAccount(wallet, {
 ## Complete Recovery Utility
 
 ```typescript
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { AccountManager } from "@aztec/aztec.js/wallet";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import * as dotenv from 'dotenv';
 import path from 'path';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 export async function createAccountFromEnv(
-    wallet: TestWallet
+    wallet: EmbeddedWallet
 ): Promise<AccountManager | null> {
     const logger = createLogger('aztec:account:recovery');
 
@@ -115,7 +117,7 @@ Check that a recovered account has the expected address:
 
 ```typescript
 async function verifyAccountRecovery(
-    wallet: TestWallet,
+    wallet: EmbeddedWallet,
     expectedAddress: string
 ): Promise<boolean> {
     const account = await recoverAccountFromEnv(wallet);
@@ -154,8 +156,9 @@ async function useRecoveredAccount() {
 
     await contract.methods.myMethod(args).send({
         from: account.address,
-        fee: { paymentMethod }
-    }).wait({ timeout: 60000 });
+        fee: { paymentMethod },
+        wait: { timeout: 60000 }
+    });
 }
 ```
 
@@ -171,7 +174,7 @@ async function useRecoveredAccount() {
 
 ```typescript
 async function isAccountDeployed(
-    wallet: TestWallet,
+    wallet: EmbeddedWallet,
     account: AccountManager
 ): Promise<boolean> {
     try {
@@ -190,8 +193,9 @@ if (!isDeployed) {
     console.log('Account not yet deployed, deploying...');
     await (await account.getDeployMethod()).send({
         from: AztecAddress.ZERO,
-        fee: { paymentMethod }
-    }).wait({ timeout: 120000 });
+        fee: { paymentMethod },
+        wait: { timeout: 120000 }
+    });
 }
 ```
 

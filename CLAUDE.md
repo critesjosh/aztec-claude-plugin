@@ -26,7 +26,7 @@ In Solidity, you read/write storage slots. In Aztec, private state uses **notes*
 ### Account Contracts Handle Auth
 
 - Users deploy their own **account contract** that defines their auth rules
-- App contracts call `context.msg_sender()` but auth happens in the account contract
+- App contracts call `self.msg_sender()` but auth happens in the account contract
 
 ### Private-to-Private Calls Compose in One Proof
 
@@ -43,7 +43,7 @@ use aztec::macros::aztec;
 #[aztec]
 pub contract MyContract {
     use aztec::macros::{functions::{external, initializer, view}, storage::storage};
-    use aztec::protocol_types::address::AztecAddress;
+    use aztec::protocol::address::AztecAddress;
     use aztec::state_vars::{Map, PublicMutable, Owned};
     use balance_set::BalanceSet;
 
@@ -80,8 +80,12 @@ pub contract MyContract {
 | `#[external("public")]` | Executes on sequencer, visible to everyone |
 | `#[external("utility")]` + `unconstrained` | Off-chain reads without proofs |
 | `#[view]` | Read-only, doesn't modify state |
-| `#[only_self]` | Only callable by the contract itself |
+| `#[internal("private")]` | Only callable by the contract itself (private context) |
+| `#[internal("public")]` | Only callable by the contract itself (public context) |
 | `#[initializer]` | Constructor function |
+| `#[authorize_once]` | Requires authwit authorization, consumed after one use |
+| `#[allow_phase_change]` | Allows private-to-public phase transition (used in FPC) |
+| `#[contract_library_method]` | Helper function, no ABI entry generated |
 
 ### Detailed Documentation
 
@@ -122,7 +126,7 @@ name = "my_contract"
 type = "contract"
 
 [dependencies]
-aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.6-patch.1", directory = "aztec" }
+aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.0.0-devnet.2-patch.1", directory = "aztec" }
 ```
 
 ## Version Detection
@@ -132,10 +136,10 @@ aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devn
 Extract the version from `Nargo.toml`:
 
 ```toml
-aztec = { git = "...", tag = "v3.0.0-devnet.6-patch.1", ... }
+aztec = { git = "...", tag = "v4.0.0-devnet.2-patch.1", ... }
 ```
 
-If version differs from `v3.0.0-devnet.6-patch.1`:
+If version differs from `v4.0.0-devnet.2-patch.1`:
 - Warn the user that patterns may not match their version
 - Prioritize Aztec MCP server over examples in this file
 
@@ -169,12 +173,12 @@ User asks Aztec question
 
 ```bash
 /aztec-version                    # Autodetect from Nargo.toml
-/aztec-version v3.0.0-devnet.7    # Use specific version
+/aztec-version v4.0.0-devnet.2-patch.1    # Use specific version
 ```
 
 Or pass version to sync:
 ```
-aztec_sync_repos({ version: "v3.0.0-devnet.7", force: true })
+aztec_sync_repos({ version: "v4.0.0-devnet.2-patch.1", force: true })
 ```
 
 ## Useful Resources

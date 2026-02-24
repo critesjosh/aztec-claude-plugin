@@ -19,8 +19,7 @@ Generate TypeScript code for interacting with Aztec contracts.
 
 ```typescript
 import { MyContract } from "../artifacts/MyContract.js";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
-import { TxStatus } from "@aztec/stdlib/tx";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 
 // Get contract instance
 const contract = MyContract.at(contractAddress, wallet);
@@ -28,12 +27,11 @@ const contract = MyContract.at(contractAddress, wallet);
 // Call a method
 const tx = await contract.methods.myMethod(arg1, arg2).send({
     from: account.address,
-    fee: { paymentMethod }
-}).wait({ timeout: 60000 });
+    fee: { paymentMethod },
+    wait: { timeout: 600 }
+});
 
-if (tx.status === TxStatus.SUCCESS) {
-    console.log('Transaction successful');
-}
+console.log('Transaction successful');
 ```
 
 ## Generated Artifacts
@@ -55,26 +53,24 @@ contract.methods.myFunction(args)            // Call contract method
 ```typescript
 // Contract and wallet
 import { Wallet } from "@aztec/aztec.js/wallet";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 
 // Transaction handling
-import { TxStatus } from "@aztec/stdlib/tx";
 import { TxReceipt } from "@aztec/stdlib/tx";
 
 // Fee payment
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 
 // Fields and types
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 
 // Logging
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { type Logger, createLogger } from "@aztec/foundation/log";
 ```
 
 ## Transaction Flow
 
 1. Get contract instance (`at()` or `deploy()`)
 2. Call method via `contract.methods.xxx()`
-3. Send with fee payment `.send({ from, fee })`
-4. Wait for confirmation `.wait({ timeout })`
-5. Check status `tx.status === TxStatus.SUCCESS`
+3. Send with fee payment and wait `.send({ from, fee, wait: { timeout } })`
+4. Transaction resolves when confirmed

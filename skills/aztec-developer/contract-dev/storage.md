@@ -37,5 +37,64 @@ Public state that private functions can read with stability guarantees. Changes 
 
 ## Note Emission
 Private state changes require emitting notes with `MessageDelivery`:
-- `CONSTRAINED_ONCHAIN` - Encryption verified in circuit, logged on-chain
-- `UNCONSTRAINED_ONCHAIN` - Encryption not verified, logged on-chain (cheaper)
+- `ONCHAIN_CONSTRAINED` - Encryption verified in circuit, logged on-chain
+- `ONCHAIN_UNCONSTRAINED` - Encryption not verified, logged on-chain (cheaper)
+
+### SinglePrivateMutable
+
+A private state variable that holds exactly one note that can be replaced. Used when you need a single mutable value per owner (e.g., a signing key).
+
+```rust
+use aztec::state_vars::SinglePrivateMutable;
+use address_note::AddressNote;
+
+#[storage]
+struct Storage<Context> {
+    admin: SinglePrivateMutable<AddressNote, Context>,
+}
+
+// Initialize (can only be called once)
+self.storage.admin.initialize(note);
+
+// Replace the stored note
+self.storage.admin.replace(new_note);
+
+// Read in unconstrained context
+let note = self.storage.admin.view_note();
+```
+
+### SinglePrivateImmutable
+
+A private state variable that holds exactly one note that can never be changed after initialization. Used for permanent private data like account signing keys.
+
+```rust
+use aztec::state_vars::SinglePrivateImmutable;
+use public_key_note::PublicKeyNote;
+
+#[storage]
+struct Storage<Context> {
+    signing_public_key: SinglePrivateImmutable<PublicKeyNote, Context>,
+}
+
+// Initialize once (subsequent calls will fail)
+self.storage.signing_public_key.initialize(note);
+
+// Read the immutable note
+let note = self.storage.signing_public_key.get_note();
+```
+
+### SingleUseClaim
+
+A state variable that can be claimed exactly once per owner. Must be wrapped in `Owned` inside a `Map`. Used for voting, one-time claims, etc.
+
+```rust
+use aztec::state_vars::{Map, Owned, SingleUseClaim};
+
+#[storage]
+struct Storage<Context> {
+    claims: Map<ElectionId, Owned<SingleUseClaim<Context>, Context>, Context>,
+}
+
+// Claim (will fail if already claimed by this owner)
+self.storage.claims.at(election_id).claim();
+```

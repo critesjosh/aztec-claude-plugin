@@ -31,8 +31,8 @@ Private queues public call for later execution:
 ```rust
 #[external("private")]
 fn transfer_to_public(to: AztecAddress, amount: u128) {
-    let from = self.msg_sender().unwrap();
-    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
+    let from = self.msg_sender();
+    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
     self.enqueue(MyContract::at(self.address)._increase_public_balance(to, amount));
 }
 
@@ -49,10 +49,10 @@ For self-calls, use shorthand:
 self.enqueue_self._increase_public_balance(to, amount);
 ```
 
-### `self.call_view()`
+### `self.view()`
 Read-only call (works in both contexts):
 ```rust
-let balance = self.call_view(Token::at(token_addr).balance_of_public(owner));
+let balance = self.view(Token::at(token_addr).balance_of_public(owner));
 ```
 
 ### `self.set_as_teardown()`

@@ -1,8 +1,41 @@
-# Jest Setup for Aztec E2E Tests
+# Test Runner Setup for Aztec E2E Tests
 
-Configure Jest for testing Aztec contracts.
+Configure Vitest (recommended) or Jest for testing Aztec contracts.
 
-## Jest Configuration
+## Vitest Configuration (Recommended)
+
+Vitest is the default test runner in Aztec v4. It handles ESM natively without extra configuration.
+
+### vitest.config.ts
+
+```typescript
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    testTimeout: 300_000,
+    hookTimeout: 300_000,
+  },
+});
+```
+
+### Package.json Scripts (Vitest)
+
+```json
+{
+  "scripts": {
+    "test": "yarn clear-store && yarn test:js && yarn test:nr",
+    "test::devnet": "AZTEC_ENV=devnet yarn test:js",
+    "test:js": "yarn clear-store && vitest run",
+    "test:nr": "aztec test",
+    "clear-store": "rm -rf ./store"
+  }
+}
+```
+
+## Jest Configuration (Alternative)
+
+Jest still works but requires ESM configuration.
 
 ### jest.integration.config.json
 
@@ -29,7 +62,7 @@ Configure Jest for testing Aztec contracts.
 }
 ```
 
-### Package.json Scripts
+### Package.json Scripts (Jest)
 
 ```json
 {
@@ -60,24 +93,23 @@ src/
 
 ```typescript
 import { MyContract } from "../../artifacts/MyContract.js";
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing';
+import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
 import { setupWallet } from "../../utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getTimeouts } from "../../../config/config.js";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { TxStatus } from "@aztec/stdlib/tx";
-import { TestWallet } from '@aztec/test-wallet/server';
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
 import { AccountManager } from "@aztec/aztec.js/wallet";
 
 describe("MyContract", () => {
     let logger: Logger;
     let sponsoredFPC: ContractInstanceWithAddress;
     let sponsoredPaymentMethod: SponsoredFeePaymentMethod;
-    let wallet: TestWallet;
+    let wallet: EmbeddedWallet;
     let account: AccountManager;
     let contract: MyContract;
 
@@ -90,7 +122,7 @@ describe("MyContract", () => {
 
         // 2. Setup sponsored fees
         sponsoredFPC = await getSponsoredFPCInstance();
-        await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+        await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
         sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
         // 3. Create account
@@ -101,16 +133,18 @@ describe("MyContract", () => {
 
         await (await account.getDeployMethod()).send({
             from: AztecAddress.ZERO,
-            fee: { paymentMethod: sponsoredPaymentMethod }
-        }).wait({ timeout: getTimeouts().deployTimeout });
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout },
+        });
 
         await wallet.registerSender(account.address);
 
         // 4. Deploy contract
         contract = await MyContract.deploy(wallet, account.address).send({
             from: account.address,
-            fee: { paymentMethod: sponsoredPaymentMethod }
-        }).deployed({ timeout: getTimeouts().deployTimeout });
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout },
+        }).deployed();
 
         logger.info(`Contract deployed at: ${contract.address}`);
     }, 600000);  // 10 minute timeout for setup
@@ -132,18 +166,18 @@ describe("MyContract", () => {
 ### helpers/setup.ts
 
 ```typescript
-import { TestWallet } from '@aztec/test-wallet/server';
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing';
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
+import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { setupWallet } from "../../utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { getTimeouts } from "../../../config/config.js";
 
 export interface TestContext {
-    wallet: TestWallet;
+    wallet: EmbeddedWallet;
     paymentMethod: SponsoredFeePaymentMethod;
     accounts: AccountManager[];
 }
@@ -153,7 +187,7 @@ export async function createTestContext(accountCount: number = 1): Promise<TestC
 
     // Setup sponsored fees
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Create accounts
@@ -166,8 +200,9 @@ export async function createTestContext(accountCount: number = 1): Promise<TestC
         const account = await wallet.createSchnorrAccount(secretKey, salt, signingKey);
         await (await account.getDeployMethod()).send({
             from: AztecAddress.ZERO,
-            fee: { paymentMethod }
-        }).wait({ timeout: getTimeouts().deployTimeout });
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout },
+        });
 
         await wallet.registerSender(account.address);
         accounts.push(account);
@@ -189,7 +224,8 @@ Aztec E2E tests require longer timeouts than typical unit tests:
 | Deploy | 2 minutes | 20 minutes |
 
 ```typescript
-// In test file
+// In test file (Vitest uses vitest.config.ts for global timeouts)
+// For Jest, set per-test timeouts:
 beforeAll(async () => {
     // ... setup code
 }, 600000);  // 10 minutes
@@ -201,6 +237,8 @@ it("test name", async () => {
 
 ## Running Tests
 
+### Vitest
+
 ```bash
 # All tests (local network)
 yarn test
@@ -210,6 +248,19 @@ yarn test:js
 
 # Devnet tests
 yarn test::devnet
+
+# Specific test file
+vitest run src/test/e2e/index.test.ts
+
+# Watch mode (not recommended for E2E)
+vitest watch
+```
+
+### Jest
+
+```bash
+# JavaScript tests only
+yarn test:js
 
 # Specific test file
 yarn test:js -- --testPathPattern="index.test.ts"

@@ -21,7 +21,7 @@ You are an expert Aztec smart contract developer. Help users write, understand, 
 
 - Implementing client-side execution logic
 - Working with private state (notes, nullifiers)
-- Handling msg_sender correctly with `.unwrap()`
+- Handling msg_sender correctly (returns AztecAddress directly in v4)
 - Using unconstrained functions for off-chain reads
 
 ### Public Functions
@@ -40,7 +40,7 @@ You are an expert Aztec smart contract developer. Help users write, understand, 
 
 ### State Management
 
-- Choosing between PublicMutable, Owned<PrivateMutable>, Owned<PrivateSet>
+- Choosing between PublicMutable, Owned<PrivateMutable>, Owned<PrivateSet>, SinglePrivateMutable, SinglePrivateImmutable, SingleUseClaim
 - Working with Maps for user-specific data
 - Creating and consuming notes
 - Managing nullifiers
@@ -105,7 +105,7 @@ struct StreamNote {
 
 // This will FAIL - sender cannot access recipient's note
 fn cancel_stream(stream_id: Field, recipient: AztecAddress) {
-    let sender = self.msg_sender().unwrap();
+    let sender = self.msg_sender();
     // Sender cannot see or nullify the recipient's note!
     self.storage.streams.at(stream_id).at(recipient).replace(...); // FAILS
 }
@@ -122,7 +122,7 @@ struct Storage<Context> {
 
 #[external("private")]
 fn cancel_stream(stream_id: Field) {
-    let sender = self.msg_sender().unwrap();
+    let sender = self.msg_sender();
     // Validate in public where both parties can access
     self.enqueue_self.process_cancellation(stream_id, sender);
 }
@@ -135,9 +135,9 @@ fn cancel_stream(stream_id: Field) {
 ```rust
 #[external("private")]
 fn transfer(to: AztecAddress, amount: u128) {
-    let from = self.msg_sender().unwrap();
-    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
-    self.storage.balances.at(to).add(amount).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
+    let from = self.msg_sender();
+    self.storage.balances.at(from).sub(amount).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+    self.storage.balances.at(to).add(amount).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 }
 ```
 
@@ -146,7 +146,7 @@ fn transfer(to: AztecAddress, amount: u128) {
 ```rust
 #[external("public")]
 fn set_config(new_value: Field) {
-    assert(self.msg_sender().unwrap() == self.storage.admin.read(), "Unauthorized");
+    assert(self.msg_sender() == self.storage.admin.read(), "Unauthorized");
     self.storage.config.write(new_value);
 }
 ```
@@ -156,11 +156,11 @@ fn set_config(new_value: Field) {
 ```rust
 #[external("private")]
 fn shield(amount: u128) {
-    let sender = self.msg_sender().unwrap();
+    let sender = self.msg_sender();
     // Enqueue call to deduct from public balance
     self.enqueue_self._burn_public(sender, amount as u64);
     // Add to private balance
-    self.storage.private_balances.at(sender).add(amount).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
+    self.storage.private_balances.at(sender).add(amount).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 }
 
 #[external("public")]

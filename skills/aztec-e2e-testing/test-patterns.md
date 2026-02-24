@@ -18,10 +18,11 @@ it("should deploy contract successfully", async () => {
 it("should execute public function", async () => {
     const tx = await contract.methods.create_item(itemId).send({
         from: account.address,
-        fee: { paymentMethod }
-    }).wait({ timeout: getTimeouts().txTimeout });
+        fee: { paymentMethod },
+        wait: { timeout: getTimeouts().txTimeout },
+    });
 
-    expect(tx.status).toBe(TxStatus.SUCCESS);
+    expect(tx.status).toBe("success");
 }, 60000);
 ```
 
@@ -31,10 +32,11 @@ it("should execute public function", async () => {
 it("should execute private function", async () => {
     const tx = await contract.methods.transfer(recipient, amount).send({
         from: sender.address,
-        fee: { paymentMethod }
-    }).wait({ timeout: getTimeouts().txTimeout });
+        fee: { paymentMethod },
+        wait: { timeout: getTimeouts().txTimeout },
+    });
 
-    expect(tx.status).toBe(TxStatus.SUCCESS);
+    expect(tx.status).toBe("success");
 }, 60000);
 ```
 
@@ -45,8 +47,9 @@ it("should reject invalid input", async () => {
     await expect(
         contract.methods.create_item(invalidId).send({
             from: account.address,
-            fee: { paymentMethod }
-        }).wait({ timeout: getTimeouts().txTimeout })
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().txTimeout },
+        })
     ).rejects.toThrow();
 }, 60000);
 ```
@@ -59,8 +62,9 @@ it("should reject unauthorized caller", async () => {
     await expect(
         contract.methods.admin_function().send({
             from: nonAdminAccount.address,
-            fee: { paymentMethod }
-        }).wait({ timeout: getTimeouts().txTimeout })
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().txTimeout },
+        })
     ).rejects.toThrow();
 }, 60000);
 ```
@@ -82,8 +86,9 @@ describe("Multi-user tests", () => {
         // User1 transfers to User2
         await contract.methods.transfer(user2.address, amount).send({
             from: user1.address,
-            fee: { paymentMethod }
-        }).wait({ timeout: getTimeouts().txTimeout });
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().txTimeout },
+        });
 
         // Verify balances
         const balance1 = await contract.methods.balance_of(user1.address).simulate({
@@ -108,38 +113,44 @@ it("should complete full workflow", async () => {
     // Step 1: Create game
     await contract.methods.create_game(gameId).send({
         from: player1.address,
-        fee: { paymentMethod }
-    }).wait({ timeout: getTimeouts().txTimeout });
+        fee: { paymentMethod },
+        wait: { timeout: getTimeouts().txTimeout },
+    });
 
     // Step 2: Join game
     await contract.methods.join_game(gameId).send({
         from: player2.address,
-        fee: { paymentMethod }
-    }).wait({ timeout: getTimeouts().txTimeout });
+        fee: { paymentMethod },
+        wait: { timeout: getTimeouts().txTimeout },
+    });
 
     // Step 3: Play rounds
     for (let round = 1; round <= 3; round++) {
         await contract.methods.play_round(gameId, round, 2, 2, 2, 2, 1).send({
             from: player1.address,
-            fee: { paymentMethod }
-        }).wait({ timeout: getTimeouts().txTimeout });
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().txTimeout },
+        });
 
         await contract.methods.play_round(gameId, round, 1, 1, 2, 2, 3).send({
             from: player2.address,
-            fee: { paymentMethod }
-        }).wait({ timeout: getTimeouts().txTimeout });
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().txTimeout },
+        });
     }
 
     // Step 4: Finish
     await contract.methods.finish_game(gameId).send({
         from: player1.address,
-        fee: { paymentMethod }
-    }).wait({ timeout: getTimeouts().txTimeout });
+        fee: { paymentMethod },
+        wait: { timeout: getTimeouts().txTimeout },
+    });
 
     await contract.methods.finish_game(gameId).send({
         from: player2.address,
-        fee: { paymentMethod }
-    }).wait({ timeout: getTimeouts().txTimeout });
+        fee: { paymentMethod },
+        wait: { timeout: getTimeouts().txTimeout },
+    });
 
     logger.info('Full workflow completed successfully');
 }, 600000);
@@ -159,10 +170,11 @@ async function executeTx(
 ) {
     const tx = await contract.methods[method](...args).send({
         from,
-        fee: { paymentMethod }
-    }).wait({ timeout });
+        fee: { paymentMethod },
+        wait: { timeout },
+    });
 
-    expect(tx.status).toBe(TxStatus.SUCCESS);
+    expect(tx.status).toBe("success");
     return tx;
 }
 
@@ -219,11 +231,19 @@ describe("Tests requiring cleanup", () => {
     });
 
     it("test 1", async () => {
-        await contract.methods.create_item(testId).send({ ... });
+        await contract.methods.create_item(testId).send({
+            from: account.address,
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().txTimeout },
+        });
     });
 
     it("test 2", async () => {
-        await contract.methods.create_item(testId).send({ ... });
+        await contract.methods.create_item(testId).send({
+            from: account.address,
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().txTimeout },
+        });
     });
 });
 ```

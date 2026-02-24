@@ -5,9 +5,9 @@ Using sponsored fees in E2E tests simplifies testing by eliminating token manage
 ## Setup Sponsored Fees in Tests
 
 ```typescript
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing';
+import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 
 let sponsoredFPC: ContractInstanceWithAddress;
@@ -18,7 +18,7 @@ beforeAll(async () => {
     sponsoredFPC = await getSponsoredFPCInstance();
 
     // Register with wallet
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
 
     // Create payment method
     sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
@@ -33,8 +33,9 @@ beforeAll(async () => {
 // Deploy account with sponsored fees (no sender required)
 await (await account.getDeployMethod()).send({
     from: AztecAddress.ZERO,  // ZERO address for account deployment
-    fee: { paymentMethod: sponsoredPaymentMethod }
-}).wait({ timeout: getTimeouts().deployTimeout });
+    fee: { paymentMethod: sponsoredPaymentMethod },
+    wait: { timeout: getTimeouts().deployTimeout },
+});
 ```
 
 ### Contract Deployment
@@ -43,8 +44,9 @@ await (await account.getDeployMethod()).send({
 // Deploy contract with sponsored fees
 const contract = await MyContract.deploy(wallet, admin).send({
     from: admin,
-    fee: { paymentMethod: sponsoredPaymentMethod }
-}).deployed({ timeout: getTimeouts().deployTimeout });
+    fee: { paymentMethod: sponsoredPaymentMethod },
+    wait: { timeout: getTimeouts().deployTimeout },
+}).deployed();
 ```
 
 ### Transaction Execution
@@ -53,28 +55,28 @@ const contract = await MyContract.deploy(wallet, admin).send({
 // Execute transaction with sponsored fees
 await contract.methods.myMethod(args).send({
     from: account.address,
-    fee: { paymentMethod: sponsoredPaymentMethod }
-}).wait({ timeout: getTimeouts().txTimeout });
+    fee: { paymentMethod: sponsoredPaymentMethod },
+    wait: { timeout: getTimeouts().txTimeout },
+});
 ```
 
 ## Complete Test Setup with Sponsored Fees
 
 ```typescript
 import { MyContract } from "../../artifacts/MyContract.js";
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing';
+import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
 import { setupWallet } from "../../utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getTimeouts } from "../../../config/config.js";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { TxStatus } from "@aztec/stdlib/tx";
-import { TestWallet } from '@aztec/test-wallet/server';
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 
 describe("MyContract with Sponsored Fees", () => {
-    let wallet: TestWallet;
+    let wallet: EmbeddedWallet;
     let sponsoredFPC: ContractInstanceWithAddress;
     let paymentMethod: SponsoredFeePaymentMethod;
     let account: AccountManager;
@@ -86,7 +88,7 @@ describe("MyContract with Sponsored Fees", () => {
 
         // 2. Setup sponsored fee payment
         sponsoredFPC = await getSponsoredFPCInstance();
-        await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+        await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
         paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
         // 3. Create and deploy account
@@ -98,26 +100,29 @@ describe("MyContract with Sponsored Fees", () => {
 
         await (await account.getDeployMethod()).send({
             from: AztecAddress.ZERO,
-            fee: { paymentMethod }
-        }).wait({ timeout: getTimeouts().deployTimeout });
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout },
+        });
 
         await wallet.registerSender(account.address);
 
         // 4. Deploy contract
         contract = await MyContract.deploy(wallet, account.address).send({
             from: account.address,
-            fee: { paymentMethod }
-        }).deployed({ timeout: getTimeouts().deployTimeout });
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout },
+        }).deployed();
 
     }, 600000);
 
     it("should perform action with sponsored fees", async () => {
         const tx = await contract.methods.myAction(args).send({
             from: account.address,
-            fee: { paymentMethod }
-        }).wait({ timeout: getTimeouts().txTimeout });
+            fee: { paymentMethod },
+            wait: { timeout: getTimeouts().txTimeout },
+        });
 
-        expect(tx.status).toBe(TxStatus.SUCCESS);
+        expect(tx.status).toBe("success");
     }, 60000);
 });
 ```
@@ -127,15 +132,16 @@ describe("MyContract with Sponsored Fees", () => {
 ### sponsored_fpc.ts
 
 ```typescript
-import { getProtocolContractAddress } from "@aztec/stdlib/protocol-contracts";
-import { ProtocolContractAddresses } from "@aztec/stdlib/client";
-import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
+import { getContractInstanceFromInstantiationParams } from '@aztec/aztec.js/contracts';
+import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
+import { SPONSORED_FPC_SALT } from '@aztec/constants';
+import { Fr } from '@aztec/aztec.js/fields';
 
-export async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAddress> {
-    const fpcAddress = getProtocolContractAddress(ProtocolContractAddresses.SponsoredFPC);
-    return {
-        address: fpcAddress,
-    } as ContractInstanceWithAddress;
+export async function getSponsoredFPCInstance() {
+    return await getContractInstanceFromInstantiationParams(
+        SponsoredFPCContractArtifact,
+        { salt: new Fr(SPONSORED_FPC_SALT) }
+    );
 }
 ```
 
@@ -172,7 +178,7 @@ const publicFee = new PublicFeePaymentMethod(fpcAddress, tokenAddress);
 
 ```typescript
 async function createSponsoredAccount(
-    wallet: TestWallet,
+    wallet: EmbeddedWallet,
     paymentMethod: SponsoredFeePaymentMethod
 ): Promise<AccountManager> {
     const account = await wallet.createSchnorrAccount(
@@ -183,8 +189,9 @@ async function createSponsoredAccount(
 
     await (await account.getDeployMethod()).send({
         from: AztecAddress.ZERO,
-        fee: { paymentMethod }
-    }).wait({ timeout: getTimeouts().deployTimeout });
+        fee: { paymentMethod },
+        wait: { timeout: getTimeouts().deployTimeout },
+    });
 
     await wallet.registerSender(account.address);
 

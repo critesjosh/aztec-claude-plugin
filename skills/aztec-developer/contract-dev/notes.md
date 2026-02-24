@@ -51,7 +51,7 @@ struct Storage {
 // Now sender CAN cancel because data is public
 #[external("private")]
 fn cancel_stream(stream_id: Field) {
-    let sender = self.msg_sender().unwrap();
+    let sender = self.msg_sender();
     // Validate in public, where both parties can access the data
     self.enqueue(Self::at(this).process_cancellation_public(stream_id, sender));
 }
@@ -83,8 +83,8 @@ let note = StreamNote::new(amount, recipient);
 self.storage.streams.at(recipient).insert(note);
 
 // Emit to both parties - both can see it, only recipient can nullify
-self.emit(note, recipient, MessageDelivery::CONSTRAINED_ONCHAIN);  // Owner - can see and nullify
-self.emit(note, sender, MessageDelivery::CONSTRAINED_ONCHAIN);     // Can see, cannot nullify
+self.emit(note, recipient, MessageDelivery.ONCHAIN_CONSTRAINED);  // Owner - can see and nullify
+self.emit(note, sender, MessageDelivery.ONCHAIN_CONSTRAINED);     // Can see, cannot nullify
 ```
 
 **Use case:** Sender needs visibility into note state but doesn't need to modify it.
@@ -139,7 +139,7 @@ pub struct AuthorizedStreamNote {
 // Sender creates note with embedded cancel authorization
 #[external("private")]
 fn create_stream(recipient: AztecAddress, amount: u128) {
-    let sender = self.msg_sender().unwrap();
+    let sender = self.msg_sender();
     let stream_id = compute_stream_id(sender, recipient, amount);
 
     // Sender signs: "I authorize cancellation of stream {stream_id}"
@@ -155,14 +155,14 @@ fn create_stream(recipient: AztecAddress, amount: u128) {
 
     // Emit to both parties so sender can later prove the authorization exists
     self.storage.streams.at(recipient).insert(note);
-    self.emit(note, sender, MessageDelivery::CONSTRAINED_ONCHAIN);
-    self.emit(note, recipient, MessageDelivery::CONSTRAINED_ONCHAIN);
+    self.emit(note, sender, MessageDelivery.ONCHAIN_CONSTRAINED);
+    self.emit(note, recipient, MessageDelivery.ONCHAIN_CONSTRAINED);
 }
 
 // Cancel function - can be called by sender
 #[external("private")]
 fn cancel_stream(stream_id: Field, recipient: AztecAddress) {
-    let sender = self.msg_sender().unwrap();
+    let sender = self.msg_sender();
 
     // Sender reads their copy of the note (via dual emission)
     let note = self.storage.streams.at(recipient).get_note();
@@ -182,7 +182,7 @@ fn cancel_stream(stream_id: Field, recipient: AztecAddress) {
 // Alternative: Recipient processes cancellation on sender's behalf
 #[external("private")]
 fn process_cancellation(stream_id: Field) {
-    let recipient = self.msg_sender().unwrap();
+    let recipient = self.msg_sender();
 
     // Recipient owns the note, so they can nullify it
     let note = self.storage.streams.at(recipient).pop_note();
@@ -224,11 +224,13 @@ Aztec has a built-in authentication witness (authwit) system. Choose pre-signed 
 Use these before creating custom notes:
 
 - **`UintNote`** - Stores a `U128` value with owner. Used by token balances.
+- **`PartialUintNote`** - Partially constructed `UintNote` for partial notes flow. Used with `complete` to finalize.
 - **`ValueNote`** - Stores a `Field` value with owner. General purpose.
 - **`AddressNote`** - Stores an `AztecAddress`. Used for private address storage.
 
 ```rust
-use aztec::note::uint_note::UintNote;
+use uint_note::UintNote;
+use uint_note::PartialUintNote;
 // or
 use value_note::value_note::ValueNote;
 ```
@@ -238,7 +240,7 @@ use value_note::value_note::ValueNote;
 ```rust
 use aztec::{
     macros::notes::note,
-    protocol_types::{address::AztecAddress, traits::Packable},
+    protocol::{address::AztecAddress, traits::Packable},
 };
 
 #[derive(Eq, Packable)]
@@ -260,7 +262,7 @@ The `#[note]` macro auto-implements `NoteHash` and `NullifiableNote` traits.
 ### Insert
 ```rust
 let note = UintNote::new(amount, owner);
-self.storage.notes.at(owner).insert(note).deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
+self.storage.notes.at(owner).insert(note).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 ```
 
 ### Get and Remove
@@ -275,9 +277,9 @@ self.storage.notes.at(owner).remove(note);
 
 When inserting notes, you must emit them so the recipient can discover them:
 
-- **`CONSTRAINED_ONCHAIN`** - Siloed to contract, included in proof. Most secure. Use for value transfers.
-- **`UNCONSTRAINED_ONCHAIN`** - Posted on-chain but not in proof. Cheaper. Use for non-critical notes.
-- **`UNCONSTRAINED_OFFCHAIN`** - Not posted on-chain. Recipient must be online. Cheapest.
+- **`ONCHAIN_CONSTRAINED`** - Siloed to contract, included in proof. Most secure. Use for value transfers.
+- **`ONCHAIN_UNCONSTRAINED`** - Posted on-chain but not in proof. Cheaper. Use for non-critical notes.
+- **`OFFCHAIN`** - Not posted on-chain. Recipient must be online. Cheapest.
 
 ## Reference
 `token_contract` - `UintNote` for balances
