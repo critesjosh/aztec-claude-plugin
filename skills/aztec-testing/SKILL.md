@@ -224,11 +224,11 @@ unconstrained fn deploy_token(env: &mut TestEnvironment, admin: AztecAddress) ->
 
 ```bash
 # Run all tests
-nargo test
+aztec test
 
 # Run specific test
-nargo test --test-name test_transfer
+aztec test --test-name test_transfer
 
 # Run with verbose output
-nargo test --show-output
+aztec test --show-output
 ```
