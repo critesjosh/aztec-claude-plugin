@@ -33,20 +33,25 @@ const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
 ```typescript
 // Deploy account with sponsored fees
-await (await account.getDeployMethod()).send({
+const deployMethod = await account.getDeployMethod();
+await deployMethod.simulate({ from: AztecAddress.ZERO });
+await deployMethod.send({
     from: AztecAddress.ZERO,  // No sender for account deployment
     fee: { paymentMethod },
     wait: { timeout: 120000 }
 });
 
 // Deploy contract with sponsored fees
-const { contract } = await MyContract.deploy(wallet, args).send({
+const deployRequest = MyContract.deploy(wallet, args);
+await deployRequest.simulate({ from: account.address });
+const { contract } = await deployRequest.send({
     from: account.address,
     fee: { paymentMethod },
     wait: { timeout: 120000, returnReceipt: true }
 });
 
 // Call contract method with sponsored fees
+await contract.methods.myMethod(args).simulate({ from: account.address });
 await contract.methods.myMethod(args).send({
     from: account.address,
     fee: { paymentMethod },
@@ -139,6 +144,7 @@ interface SendMethodOptions {
 
 ```typescript
 try {
+    await contract.methods.myMethod(args).simulate({ from: account.address });
     const tx = await contract.methods.myMethod(args).send({
         from: account.address,
         fee: { paymentMethod },

@@ -7,7 +7,10 @@ Common patterns for Aztec transaction handling in TypeScript.
 ```typescript
 import { TxStatus } from "@aztec/stdlib/tx";
 
-// 1. Call method and wait for confirmation (v4 inline wait)
+// 1. Simulate first to catch errors instantly
+await contract.methods.myMethod(args).simulate({ from: senderAddress });
+
+// 2. Call method and wait for confirmation (v4 inline wait)
 const tx = await contract.methods.myMethod(args).send({
     from: senderAddress,
     fee: { paymentMethod },
@@ -37,7 +40,8 @@ interface SendOptions {
     };
 }
 
-// Usage: wait options are now inline with send
+// Usage: simulate first, then send with inline wait options
+await contract.methods.transfer(to, amount).simulate({ from: account.address });
 const receipt = await contract.methods.transfer(to, amount).send({
     fee: { paymentMethod },
     wait: { timeout: 600 }  // Wait options are now inline
@@ -50,6 +54,7 @@ Public functions execute on-chain with visible state changes:
 
 ```typescript
 // Create a new item (public state change)
+await contract.methods.create_item(itemId).simulate({ from: account.address });
 const tx = await contract.methods.create_item(itemId).send({
     from: account.address,
     fee: { paymentMethod },
@@ -57,7 +62,8 @@ const tx = await contract.methods.create_item(itemId).send({
 });
 
 // Update public storage
-const tx = await contract.methods.set_value(newValue).send({
+await contract.methods.set_value(newValue).simulate({ from: admin.address });
+const tx2 = await contract.methods.set_value(newValue).send({
     from: admin.address,
     fee: { paymentMethod },
     wait: { timeout: 60000 }
@@ -70,6 +76,7 @@ Private functions execute client-side, creating encrypted notes:
 
 ```typescript
 // Private transfer (creates notes)
+await contract.methods.transfer(recipient, amount).simulate({ from: sender.address });
 const tx = await contract.methods.transfer(recipient, amount).send({
     from: sender.address,
     fee: { paymentMethod },
@@ -77,7 +84,8 @@ const tx = await contract.methods.transfer(recipient, amount).send({
 });
 
 // Store private data
-const tx = await contract.methods.store_secret(secretData).send({
+await contract.methods.store_secret(secretData).simulate({ from: account.address });
+const tx2 = await contract.methods.store_secret(secretData).send({
     from: account.address,
     fee: { paymentMethod },
     wait: { timeout: 60000 }
@@ -129,6 +137,7 @@ async function sendWithRetry<T>(
 
 // Usage
 const tx = await sendWithRetry(async () => {
+    await contract.methods.myMethod(args).simulate({ from: account.address });
     return await contract.methods.myMethod(args).send({
         from: account.address,
         fee: { paymentMethod },
@@ -146,7 +155,10 @@ async function waitForAll(
     return Promise.all(transactions);
 }
 
-// Usage
+// Usage: simulate all upfront, then send in parallel
+await contract.methods.action1(args1).simulate({ from });
+await contract.methods.action2(args2).simulate({ from });
+
 const txPromises = [
     contract.methods.action1(args1).send({ from, fee, wait: { timeout } }),
     contract.methods.action2(args2).send({ from, fee, wait: { timeout } }),
@@ -175,9 +187,9 @@ async function executeSequential(
 
 // Usage
 const receipts = await executeSequential([
-    () => contract.methods.step1().send({ from, fee, wait: { timeout } }),
-    () => contract.methods.step2().send({ from, fee, wait: { timeout } }),
-    () => contract.methods.step3().send({ from, fee, wait: { timeout } }),
+    async () => { await contract.methods.step1().simulate({ from }); return contract.methods.step1().send({ from, fee, wait: { timeout } }); },
+    async () => { await contract.methods.step2().simulate({ from }); return contract.methods.step2().send({ from, fee, wait: { timeout } }); },
+    async () => { await contract.methods.step3().simulate({ from }); return contract.methods.step3().send({ from, fee, wait: { timeout } }); },
 ]);
 ```
 
@@ -187,6 +199,7 @@ const receipts = await executeSequential([
 
 ```typescript
 try {
+    await contract.methods.transfer(to, amount).simulate({ from: account.address });
     await contract.methods.transfer(to, amount).send({
         from: account.address,
         fee: { paymentMethod },
@@ -210,6 +223,7 @@ try {
 ```typescript
 import { TxStatus } from "@aztec/stdlib/tx";
 
+await contract.methods.myMethod(args).simulate({ from: account.address });
 const tx = await contract.methods.myMethod(args).send({
     from: account.address,
     fee: { paymentMethod },
@@ -253,7 +267,9 @@ async function deployContract(
     paymentMethod: SponsoredFeePaymentMethod,
     timeout: number
 ): Promise<MyContract> {
-    const contract = await MyContract.deploy(wallet, admin).send({
+    const deployRequest = MyContract.deploy(wallet, admin);
+    await deployRequest.simulate({ from: admin });
+    const contract = await deployRequest.send({
         from: admin,
         fee: { paymentMethod },
         wait: { timeout, returnReceipt: true }
@@ -277,6 +293,7 @@ async function sendTx(
     paymentMethod: SponsoredFeePaymentMethod,
     timeout: number
 ) {
+    await contract.methods[methodName](...args).simulate({ from });
     const tx = await contract.methods[methodName](...args).send({
         from,
         fee: { paymentMethod },

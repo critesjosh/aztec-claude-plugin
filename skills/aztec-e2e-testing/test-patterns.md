@@ -16,6 +16,7 @@ it("should deploy contract successfully", async () => {
 
 ```typescript
 it("should execute public function", async () => {
+    await contract.methods.create_item(itemId).simulate({ from: account.address });
     const tx = await contract.methods.create_item(itemId).send({
         from: account.address,
         fee: { paymentMethod },
@@ -30,6 +31,7 @@ it("should execute public function", async () => {
 
 ```typescript
 it("should execute private function", async () => {
+    await contract.methods.transfer(recipient, amount).simulate({ from: sender.address });
     const tx = await contract.methods.transfer(recipient, amount).send({
         from: sender.address,
         fee: { paymentMethod },
@@ -45,11 +47,7 @@ it("should execute private function", async () => {
 ```typescript
 it("should reject invalid input", async () => {
     await expect(
-        contract.methods.create_item(invalidId).send({
-            from: account.address,
-            fee: { paymentMethod },
-            wait: { timeout: getTimeouts().txTimeout },
-        })
+        contract.methods.create_item(invalidId).simulate({ from: account.address })
     ).rejects.toThrow();
 }, 60000);
 ```
@@ -60,11 +58,7 @@ it("should reject invalid input", async () => {
 it("should reject unauthorized caller", async () => {
     // Non-admin tries to perform admin action
     await expect(
-        contract.methods.admin_function().send({
-            from: nonAdminAccount.address,
-            fee: { paymentMethod },
-            wait: { timeout: getTimeouts().txTimeout },
-        })
+        contract.methods.admin_function().simulate({ from: nonAdminAccount.address })
     ).rejects.toThrow();
 }, 60000);
 ```
@@ -84,6 +78,7 @@ describe("Multi-user tests", () => {
 
     it("should allow transfer between users", async () => {
         // User1 transfers to User2
+        await contract.methods.transfer(user2.address, amount).simulate({ from: user1.address });
         await contract.methods.transfer(user2.address, amount).send({
             from: user1.address,
             fee: { paymentMethod },
@@ -111,6 +106,7 @@ it("should complete full workflow", async () => {
     const gameId = new Fr(100);
 
     // Step 1: Create game
+    await contract.methods.create_game(gameId).simulate({ from: player1.address });
     await contract.methods.create_game(gameId).send({
         from: player1.address,
         fee: { paymentMethod },
@@ -118,6 +114,7 @@ it("should complete full workflow", async () => {
     });
 
     // Step 2: Join game
+    await contract.methods.join_game(gameId).simulate({ from: player2.address });
     await contract.methods.join_game(gameId).send({
         from: player2.address,
         fee: { paymentMethod },
@@ -126,12 +123,14 @@ it("should complete full workflow", async () => {
 
     // Step 3: Play rounds
     for (let round = 1; round <= 3; round++) {
+        await contract.methods.play_round(gameId, round, 2, 2, 2, 2, 1).simulate({ from: player1.address });
         await contract.methods.play_round(gameId, round, 2, 2, 2, 2, 1).send({
             from: player1.address,
             fee: { paymentMethod },
             wait: { timeout: getTimeouts().txTimeout },
         });
 
+        await contract.methods.play_round(gameId, round, 1, 1, 2, 2, 3).simulate({ from: player2.address });
         await contract.methods.play_round(gameId, round, 1, 1, 2, 2, 3).send({
             from: player2.address,
             fee: { paymentMethod },
@@ -140,12 +139,14 @@ it("should complete full workflow", async () => {
     }
 
     // Step 4: Finish
+    await contract.methods.finish_game(gameId).simulate({ from: player1.address });
     await contract.methods.finish_game(gameId).send({
         from: player1.address,
         fee: { paymentMethod },
         wait: { timeout: getTimeouts().txTimeout },
     });
 
+    await contract.methods.finish_game(gameId).simulate({ from: player2.address });
     await contract.methods.finish_game(gameId).send({
         from: player2.address,
         fee: { paymentMethod },
@@ -168,6 +169,7 @@ async function executeTx(
     paymentMethod: SponsoredFeePaymentMethod,
     timeout: number
 ) {
+    await contract.methods[method](...args).simulate({ from });
     const tx = await contract.methods[method](...args).send({
         from,
         fee: { paymentMethod },
@@ -231,6 +233,7 @@ describe("Tests requiring cleanup", () => {
     });
 
     it("test 1", async () => {
+        await contract.methods.create_item(testId).simulate({ from: account.address });
         await contract.methods.create_item(testId).send({
             from: account.address,
             fee: { paymentMethod },
@@ -239,6 +242,7 @@ describe("Tests requiring cleanup", () => {
     });
 
     it("test 2", async () => {
+        await contract.methods.create_item(testId).simulate({ from: account.address });
         await contract.methods.create_item(testId).send({
             from: account.address,
             fee: { paymentMethod },

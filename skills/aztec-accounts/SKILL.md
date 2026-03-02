@@ -32,7 +32,9 @@ const account = await wallet.createSchnorrAccount(secretKey, salt, signingKey);
 console.log(`Account address: ${account.address}`);
 
 // Deploy account (required before use)
-await (await account.getDeployMethod()).send({
+const deployMethod = await account.getDeployMethod();
+await deployMethod.simulate({ from: AztecAddress.ZERO });
+await deployMethod.send({
     from: AztecAddress.ZERO,
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: 120000 }

@@ -62,6 +62,7 @@ async function main() {
 
     // Deploy account
     const deployMethod = await account.getDeployMethod();
+    await deployMethod.simulate({ from: AztecAddress.ZERO });
     const accountTx = await deployMethod.send({
         from: AztecAddress.ZERO,
         fee: { paymentMethod: sponsoredPaymentMethod },
@@ -82,6 +83,7 @@ async function main() {
     const contractDeployMethod = MyContract.deploy(wallet, ...constructorArgs);
 
     logger.info('Waiting for deployment transaction to be mined...');
+    await contractDeployMethod.simulate({ from: account.address });
     const { contract } = await contractDeployMethod.send({
         from: account.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
@@ -191,6 +193,7 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
 
     // Deploy account
     const deployMethod = await account.getDeployMethod();
+    await deployMethod.simulate({ from: AztecAddress.ZERO });
     const tx = await deployMethod.send({
         from: AztecAddress.ZERO,
         fee: { paymentMethod: sponsoredPaymentMethod },
