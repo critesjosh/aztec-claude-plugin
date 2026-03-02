@@ -72,7 +72,7 @@ See [NETWORK.md](./NETWORK.md) for detailed version differences.
 
 ## Aztec MCP Server
 
-This plugin includes the [aztec-mcp-server](https://www.npmjs.com/package/aztec-mcp-server) which provides local access to Aztec documentation, examples, and source code.
+This plugin includes the [@aztec/mcp-server](https://www.npmjs.com/package/@aztec/mcp-server) which provides local access to Aztec documentation, examples, and source code.
 
 ### Features
 
