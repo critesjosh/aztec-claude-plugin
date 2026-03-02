@@ -145,7 +145,7 @@ If version differs from `v4.0.0-devnet.2-patch.1`:
 
 ## ⚠️ MANDATORY: Always Use Aztec MCP Server First
 
-**The Aztec API changes frequently. Query the aztec-mcp-server BEFORE writing any Aztec code.**
+**The Aztec API changes frequently. Query the @aztec/mcp-server BEFORE writing any Aztec code.**
 
 ### Workflow
 
