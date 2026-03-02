@@ -25,6 +25,7 @@ import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 const contract = MyContract.at(contractAddress, wallet);
 
 // Call a method
+await contract.methods.myMethod(arg1, arg2).simulate({ from: account.address });
 const tx = await contract.methods.myMethod(arg1, arg2).send({
     from: account.address,
     fee: { paymentMethod },
@@ -72,5 +73,6 @@ import { type Logger, createLogger } from "@aztec/foundation/log";
 
 1. Get contract instance (`at()` or `deploy()`)
 2. Call method via `contract.methods.xxx()`
-3. Send with fee payment and wait `.send({ from, fee, wait: { timeout } })`
-4. Transaction resolves when confirmed
+3. Simulate first to catch errors `.simulate({ from })`
+4. Send with fee payment and wait `.send({ from, fee, wait: { timeout } })`
+5. Transaction resolves when confirmed

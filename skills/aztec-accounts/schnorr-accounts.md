@@ -42,6 +42,7 @@ const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 const deployMethod = await account.getDeployMethod();
 
 // Deploy
+await deployMethod.simulate({ from: AztecAddress.ZERO });
 const tx = await deployMethod.send({
     from: AztecAddress.ZERO,  // No sender for account deployment
     fee: { paymentMethod },
@@ -101,6 +102,7 @@ export async function createAndDeployAccount(
 
     // Deploy account
     const deployMethod = await account.getDeployMethod();
+    await deployMethod.simulate({ from: AztecAddress.ZERO });
     const tx = await deployMethod.send({
         from: AztecAddress.ZERO,
         fee: { paymentMethod },
@@ -137,7 +139,9 @@ async function createTestAccounts(wallet: EmbeddedWallet, count: number) {
 
         const account = await wallet.createSchnorrAccount(secretKey, salt, signingKey);
 
-        await (await account.getDeployMethod()).send({
+        const deployMethod = await account.getDeployMethod();
+        await deployMethod.simulate({ from: AztecAddress.ZERO });
+        await deployMethod.send({
             from: AztecAddress.ZERO,
             fee: { paymentMethod },
             wait: { timeout: 120000 }
@@ -181,7 +185,9 @@ export async function generateSchnorrAccounts(
 
     // Step 2: Deploy all accounts (sends transactions)
     for (const account of accounts) {
-        await (await account.getDeployMethod()).send({
+        const deployMethod = await account.getDeployMethod();
+        await deployMethod.simulate({ from: AztecAddress.ZERO });
+        await deployMethod.send({
             from: AztecAddress.ZERO,
             fee: { paymentMethod },
             wait: { timeout: 120000 }
@@ -207,6 +213,7 @@ After deployment, register accounts for transaction sending:
 await wallet.registerSender(account.address);
 
 // Now the wallet can send transactions from this account
+await contract.methods.myMethod(args).simulate({ from: account.address });
 await contract.methods.myMethod(args).send({
     from: account.address,
     fee: { paymentMethod },

@@ -31,7 +31,9 @@ beforeAll(async () => {
 
 ```typescript
 // Deploy account with sponsored fees (no sender required)
-await (await account.getDeployMethod()).send({
+const deployMethod = await account.getDeployMethod();
+await deployMethod.simulate({ from: AztecAddress.ZERO });
+await deployMethod.send({
     from: AztecAddress.ZERO,  // ZERO address for account deployment
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: getTimeouts().deployTimeout },
@@ -42,7 +44,9 @@ await (await account.getDeployMethod()).send({
 
 ```typescript
 // Deploy contract with sponsored fees
-const contract = await MyContract.deploy(wallet, admin).send({
+const deployRequest = MyContract.deploy(wallet, admin);
+await deployRequest.simulate({ from: admin });
+const contract = await deployRequest.send({
     from: admin,
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: getTimeouts().deployTimeout },
@@ -53,6 +57,7 @@ const contract = await MyContract.deploy(wallet, admin).send({
 
 ```typescript
 // Execute transaction with sponsored fees
+await contract.methods.myMethod(args).simulate({ from: account.address });
 await contract.methods.myMethod(args).send({
     from: account.address,
     fee: { paymentMethod: sponsoredPaymentMethod },
@@ -98,7 +103,9 @@ describe("MyContract with Sponsored Fees", () => {
             GrumpkinScalar.random()
         );
 
-        await (await account.getDeployMethod()).send({
+        const deployMethod = await account.getDeployMethod();
+        await deployMethod.simulate({ from: AztecAddress.ZERO });
+        await deployMethod.send({
             from: AztecAddress.ZERO,
             fee: { paymentMethod },
             wait: { timeout: getTimeouts().deployTimeout },
@@ -107,7 +114,9 @@ describe("MyContract with Sponsored Fees", () => {
         await wallet.registerSender(account.address);
 
         // 4. Deploy contract
-        contract = await MyContract.deploy(wallet, account.address).send({
+        const deployRequest = MyContract.deploy(wallet, account.address);
+        await deployRequest.simulate({ from: account.address });
+        contract = await deployRequest.send({
             from: account.address,
             fee: { paymentMethod },
             wait: { timeout: getTimeouts().deployTimeout },
@@ -116,6 +125,7 @@ describe("MyContract with Sponsored Fees", () => {
     }, 600000);
 
     it("should perform action with sponsored fees", async () => {
+        await contract.methods.myAction(args).simulate({ from: account.address });
         const tx = await contract.methods.myAction(args).send({
             from: account.address,
             fee: { paymentMethod },
@@ -187,7 +197,9 @@ async function createSponsoredAccount(
         GrumpkinScalar.random()
     );
 
-    await (await account.getDeployMethod()).send({
+    const deployMethod = await account.getDeployMethod();
+    await deployMethod.simulate({ from: AztecAddress.ZERO });
+    await deployMethod.send({
         from: AztecAddress.ZERO,
         fee: { paymentMethod },
         wait: { timeout: getTimeouts().deployTimeout },

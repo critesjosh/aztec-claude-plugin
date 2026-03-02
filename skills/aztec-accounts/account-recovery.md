@@ -154,6 +154,7 @@ async function useRecoveredAccount() {
     // Use account for transactions
     const contract = MyContract.at(contractAddress, wallet);
 
+    await contract.methods.myMethod(args).simulate({ from: account.address });
     await contract.methods.myMethod(args).send({
         from: account.address,
         fee: { paymentMethod },
@@ -191,7 +192,9 @@ const isDeployed = await isAccountDeployed(wallet, account);
 
 if (!isDeployed) {
     console.log('Account not yet deployed, deploying...');
-    await (await account.getDeployMethod()).send({
+    const deployMethod = await account.getDeployMethod();
+    await deployMethod.simulate({ from: AztecAddress.ZERO });
+    await deployMethod.send({
         from: AztecAddress.ZERO,
         fee: { paymentMethod },
         wait: { timeout: 120000 }

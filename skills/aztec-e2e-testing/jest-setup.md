@@ -131,7 +131,9 @@ describe("MyContract", () => {
         const salt = Fr.random();
         account = await wallet.createSchnorrAccount(secretKey, salt, signingKey);
 
-        await (await account.getDeployMethod()).send({
+        const deployMethod = await account.getDeployMethod();
+        await deployMethod.simulate({ from: AztecAddress.ZERO });
+        await deployMethod.send({
             from: AztecAddress.ZERO,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout },
@@ -140,7 +142,9 @@ describe("MyContract", () => {
         await wallet.registerSender(account.address);
 
         // 4. Deploy contract
-        contract = await MyContract.deploy(wallet, account.address).send({
+        const deployRequest = MyContract.deploy(wallet, account.address);
+        await deployRequest.simulate({ from: account.address });
+        contract = await deployRequest.send({
             from: account.address,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout },
@@ -198,7 +202,9 @@ export async function createTestContext(accountCount: number = 1): Promise<TestC
         const salt = Fr.random();
 
         const account = await wallet.createSchnorrAccount(secretKey, salt, signingKey);
-        await (await account.getDeployMethod()).send({
+        const deployMethod = await account.getDeployMethod();
+        await deployMethod.simulate({ from: AztecAddress.ZERO });
+        await deployMethod.send({
             from: AztecAddress.ZERO,
             fee: { paymentMethod },
             wait: { timeout: getTimeouts().deployTimeout },

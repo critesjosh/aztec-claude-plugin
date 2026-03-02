@@ -55,6 +55,7 @@ export class MyContractClient {
     ): Promise<void> {
         this.logger.info(`Creating item ${itemId}...`);
 
+        await this.contract.methods.create_item(itemId).simulate({ from: sender });
         const tx = await this.contract.methods.create_item(itemId).send({
             from: sender,
             fee: { paymentMethod: this.paymentMethod },
@@ -78,6 +79,7 @@ export class MyContractClient {
     ): Promise<void> {
         this.logger.info(`Transferring ${amount} to ${to}...`);
 
+        await this.contract.methods.transfer(to, amount).simulate({ from: sender });
         const tx = await this.contract.methods.transfer(to, amount).send({
             from: sender,
             fee: { paymentMethod: this.paymentMethod },
@@ -146,7 +148,9 @@ export class MyContractClient {
         paymentMethod: SponsoredFeePaymentMethod,
         timeout: number = 120000
     ): Promise<MyContractClient> {
-        const contract = await MyContract.deploy(wallet, admin).send({
+        const deployRequest = MyContract.deploy(wallet, admin);
+        await deployRequest.simulate({ from: admin });
+        const contract = await deployRequest.send({
             from: admin,
             fee: { paymentMethod },
             wait: { timeout, returnReceipt: true }
@@ -207,6 +211,7 @@ async function safeCall<T>(
 // Usage in client
 async createItem(itemId: bigint, sender: AztecAddress): Promise<void> {
     return safeCall('create_item', async () => {
+        await this.contract.methods.create_item(itemId).simulate({ from: sender });
         const tx = await this.contract.methods.create_item(itemId).send({
             from: sender,
             fee: { paymentMethod: this.paymentMethod },

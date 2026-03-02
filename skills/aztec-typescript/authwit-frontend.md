@@ -32,7 +32,8 @@ const witness = await wallet.createAuthWit(fromAddress, {
   action,
 });
 
-// 4. Include witness in send() options
+// 4. Simulate first (without authWitnesses), then send with witness
+await vaultContract.methods.deposit(amount).simulate({ from: wallet.address });
 await vaultContract.methods
   .deposit(amount)
   .send({ from: wallet.address, authWitnesses: [witness], wait: { timeout: 600 } });
@@ -50,6 +51,7 @@ await vaultContract.methods
 ```typescript
 // Private AuthWit - included with transaction
 const witness = await wallet.createAuthWit(fromAddress, { caller, action });
+await someAction.simulate({ from: wallet.address });
 await someAction.send({ authWitnesses: [witness], wait: { timeout: 600 } });
 ```
 
@@ -62,9 +64,11 @@ await someAction.send({ authWitnesses: [witness], wait: { timeout: 600 } });
 ```typescript
 // Public AuthWit - registered on-chain first
 const innerHash = await action.computeInnerAuthWitHash();
+await wallet.setPublicAuthWit(innerHash, true).simulate({ from: wallet.address });
 await wallet.setPublicAuthWit(innerHash, true).send({ wait: { timeout: 600 } });
 
 // Later, the authorized action can execute
+await someAction.simulate({ from: wallet.address });
 await someAction.send({ wait: { timeout: 600 } });
 ```
 
@@ -84,7 +88,8 @@ const witness2 = await wallet2.createAuthWit(from2Address, {
   action: action2,
 });
 
-// Include all witnesses in send() options
+// Simulate first (without authWitnesses), then send with witnesses
+await contract.methods.multiSourceOperation().simulate({ from });
 await contract.methods
   .multiSourceOperation()
   .send({ from, authWitnesses: [witness1, witness2], wait: { timeout: 600 } });

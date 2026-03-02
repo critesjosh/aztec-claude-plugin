@@ -181,6 +181,42 @@ Or pass version to sync:
 aztec_sync_repos({ version: "v4.0.0-devnet.2-patch.1", force: true })
 ```
 
+## ⚠️ Critical: Simulate Before Send
+
+**Always call `.simulate()` before `.send()` for every state-changing transaction.**
+
+Without simulation, failing transactions hang for up to 600 seconds with opaque errors. `.simulate()` surfaces revert reasons instantly.
+
+```typescript
+// Standard method call
+await contract.methods.myMethod(args).simulate({ from: account.address });
+const tx = await contract.methods.myMethod(args).send({
+    from: account.address,
+    fee: { paymentMethod },
+    wait: { timeout: 600 }
+});
+
+// Contract deployment (break the chain)
+const deployRequest = MyContract.deploy(wallet, admin);
+await deployRequest.simulate({ from: admin });
+const contract = await deployRequest.send({
+    from: admin, fee: { paymentMethod }, wait: { timeout, returnReceipt: true }
+});
+
+// Account deployment (break the chain)
+const deployMethod = await account.getDeployMethod();
+await deployMethod.simulate({ from: AztecAddress.ZERO });
+await deployMethod.send({
+    from: AztecAddress.ZERO, fee: { paymentMethod }, wait: { timeout }
+});
+```
+
+**Key rules:**
+- `.simulate()` only needs `from` — no `fee`, `wait`, or `authWitnesses`
+- For deploy chains, break into a variable first, then simulate, then send
+- For error tests, use `.simulate()` instead of `.send()` to catch reverts
+- View/read-only calls already use `.simulate()` — skip those
+
 ## Useful Resources
 
 - Aztec Documentation: https://docs.aztec.network

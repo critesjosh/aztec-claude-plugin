@@ -164,13 +164,16 @@ async function main() {
     const account = await deploySchnorrAccount(wallet);
 
     // Deploy or connect to contract
-    const contract = await MyContract.deploy(wallet, account.address).send({
+    const deployRequest = MyContract.deploy(wallet, account.address);
+    await deployRequest.simulate({ from: account.address });
+    const contract = await deployRequest.send({
         from: account.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
     });
 
     // Interact
+    await contract.methods.myMethod(args).simulate({ from: account.address });
     await contract.methods.myMethod(args).send({
         from: account.address,
         fee: { paymentMethod },
