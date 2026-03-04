@@ -26,7 +26,10 @@ In Solidity, you read/write storage slots. In Aztec, private state uses **notes*
 ### Account Contracts Handle Auth
 
 - Users deploy their own **account contract** that defines their auth rules
-- App contracts call `self.msg_sender()` but auth happens in the account contract
+- App contracts call `self.msg_sender()` — returns `AztecAddress` (panics if None)
+- Use `self.context.maybe_msg_sender()` → `Option<AztecAddress>` in entrypoints or incognito-callable functions
+- msg_sender is **None** at tx entrypoints (account contracts) and in incognito enqueued public calls
+- msg_sender in enqueued public calls is **visible on-chain** — use `self.enqueue_incognito()` to hide it
 
 ### Private-to-Private Calls Compose in One Proof
 

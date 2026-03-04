@@ -21,7 +21,7 @@ You are an expert Aztec smart contract developer. Help users write, understand, 
 
 - Implementing client-side execution logic
 - Working with private state (notes, nullifiers)
-- Handling msg_sender correctly (returns AztecAddress directly in v4)
+- Handling msg_sender correctly (see msg_sender behavior section below)
 - Using unconstrained functions for off-chain reads
 
 ### Public Functions
@@ -37,6 +37,33 @@ You are an expert Aztec smart contract developer. Help users write, understand, 
 - Passing data between execution domains
 - Cross-contract interactions
 - Handling execution order
+
+### ⚠️ msg_sender() Behavior
+
+**Two APIs exist — understand the difference:**
+
+| Method | Returns | When to Use |
+|--------|---------|-------------|
+| `self.msg_sender()` | `AztecAddress` | App contract functions (most common) |
+| `self.context.maybe_msg_sender()` | `Option<AztecAddress>` | Account contract entrypoints, public functions that accept incognito calls |
+
+**`self.msg_sender()`** is a convenience wrapper that internally calls `self.context.maybe_msg_sender().unwrap()`. It **panics (reverts)** if the sender is `None`.
+
+**When msg_sender is None:**
+- **Private entrypoint**: The first function call of every transaction has no sender (there are no EOAs in Aztec). This is typically the account contract's `entrypoint()` — account contract developers must use `maybe_msg_sender()`.
+- **Incognito public calls**: When a private function enqueues a public call using `self.enqueue_incognito(...)`, the public function sees `msg_sender` as `None`. The public function **must** use `maybe_msg_sender()` or it will revert.
+
+**msg_sender propagation through call chains:**
+- User tx → Account Contract `entrypoint()`: msg_sender = **None**
+- Account Contract → Your App Contract: msg_sender = **user's account contract address** (this is the user's identity)
+- Contract A → Contract B (via `self.call()`): msg_sender = **Contract A's address**
+- Contract A → Contract B (via `self.enqueue()`): msg_sender = **Contract A's address** (visible on-chain!)
+- Contract A → Contract B (via `self.enqueue_incognito()`): msg_sender = **None** (privacy-preserving)
+
+**Privacy implications:**
+- In private→private calls, msg_sender is only visible to the called function (private execution)
+- In private→public enqueued calls, msg_sender is **visible on-chain** to all observers. This reveals which contract made the call. Use `self.enqueue_incognito()` to hide it, but the target public function must handle a None sender.
+- Public→public calls always have a non-None msg_sender
 
 ### State Management
 

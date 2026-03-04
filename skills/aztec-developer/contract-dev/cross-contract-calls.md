@@ -108,7 +108,26 @@ Understanding who `msg_sender` is at each point prevents subtle authorization bu
 
 ### Privacy Implication
 
-When a private function enqueues a public call, `msg_sender` in the public function is visible on-chain. This reveals which contract made the call, though not necessarily which user initiated it. The `hide_msg_sender` flag on `FunctionCall` (used by `AppPayload`) can set msg_sender to zero for public calls, hiding even the calling contract.
+When a private function enqueues a public call, `msg_sender` in the public function is **visible on-chain**. This reveals which contract made the call, though not necessarily which user initiated it.
+
+### Incognito Calls (Hiding msg_sender)
+
+Use `self.enqueue_incognito()` to hide the calling contract's identity from public functions:
+
+```rust
+// Standard enqueue — msg_sender visible on-chain
+self.enqueue(Token::at(address).increase_supply(amount));
+
+// Incognito — msg_sender is None in the public function
+self.enqueue_incognito(Token::at(address).increase_supply(amount));
+```
+
+**Three incognito variants:**
+- `self.enqueue_incognito(call)` — enqueue public call with hidden sender
+- `self.enqueue_view_incognito(call)` — read-only public call with hidden sender
+- `self.set_as_teardown_incognito(call)` — teardown call with hidden sender
+
+**Important:** The target public function must handle a None msg_sender. If it calls `self.msg_sender()` (which unwraps), it will **revert**. The function must use `self.context.maybe_msg_sender()` instead and handle the None case.
 
 ## Traced Example: AMM Swap Pipeline
 

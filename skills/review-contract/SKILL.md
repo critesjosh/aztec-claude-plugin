@@ -108,7 +108,7 @@ This prevents false positives from outdated knowledge.
 #### Access Control
 
 - [ ] Sensitive functions have proper access control
-- [ ] `self.msg_sender()` used correctly (returns AztecAddress directly in v4, no `.unwrap()` needed)
+- [ ] `self.msg_sender()` used correctly — returns `AztecAddress` but **panics if sender is None** (entrypoints, incognito calls). Use `self.context.maybe_msg_sender()` when None is possible.
 - [ ] Admin functions protected appropriately
 
 #### Cross-Contract Calls
@@ -197,4 +197,4 @@ During review, you may ask the user clarifying questions:
 
 4. **Race conditions between private and public state** - Private reads stale public state.
 
-5. **Using `.unwrap()` on `msg_sender()` in v4** - In v4, `self.msg_sender()` returns `AztecAddress` directly; `.unwrap()` is no longer needed.
+5. **Misunderstanding msg_sender() behavior** - `self.msg_sender()` returns `AztecAddress` directly (internally unwraps), but **panics if sender is None**. This happens at tx entrypoints (account contracts) and in public functions called via `enqueue_incognito()`. Use `self.context.maybe_msg_sender()` → `Option<AztecAddress>` when None is possible. Also note: msg_sender in enqueued public calls is **visible on-chain**, which can leak privacy.
