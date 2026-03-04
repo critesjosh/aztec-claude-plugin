@@ -61,5 +61,93 @@ For fee payment - executes after all public calls when transaction fee is known:
 self.set_as_teardown(FPC::at(self.address)._complete_refund(token, partial_note, max_fee));
 ```
 
+## What Actually Happens at Runtime
+
+The syntax above hides important runtime behavior. Here's what each call method actually does:
+
+### `self.call()` — Immediate Same-Domain Execution
+
+Both functions execute **in the same PXE session** (private→private) or **in the same sequencer batch** (public→public):
+- The called function runs immediately and returns a value
+- `msg_sender` in the called function = the calling contract's address
+- Private→private: composed into the same kernel proof
+- Public→public: executes sequentially in the same block
+
+### `self.enqueue()` / `self.enqueue_self` — Deferred Public Execution
+
+The public call is **recorded but NOT executed** during private execution:
+- No return value available to the private caller (public hasn't run yet)
+- The call is added to the kernel proof's enqueued call list
+- Executes later on the sequencer, in the order it was enqueued
+- `msg_sender` in the public function = the contract that enqueued it
+- With `#[only_self]`: asserts `msg_sender == self.address` (the contract itself)
+
+### `self.view()` — Static (Read-Only) Call
+
+Makes a **static call** that cannot modify state:
+- In **private context**: executes on PXE, returns a value not proven in the circuit (potentially stale data from last synced block)
+- In **public context**: executes on the sequencer with current on-chain state, same trust model as other public calls
+- Useful for reading state from other contracts without side effects
+
+### `self.set_as_teardown()` — Post-Execution Hook
+
+Executes **after all other public calls**, when the transaction fee is known:
+- Used by Fee Payment Contracts (FPC) to settle refunds
+- The `transaction_fee` global is only available in teardown phase
+
+## msg_sender Propagation
+
+Understanding who `msg_sender` is at each point prevents subtle authorization bugs:
+
+| Call Chain | msg_sender in Target |
+|-----------|---------------------|
+| User → ContractA.foo() | User's account contract address |
+| ContractA.foo() → `self.call(ContractB.bar())` | ContractA's address |
+| ContractA.foo() → `self.enqueue_self._pub()` | ContractA's address (verified by `#[only_self]`) |
+| AppPayload dispatches ContractA.foo() | User's account contract address |
+
+### Privacy Implication
+
+When a private function enqueues a public call, `msg_sender` in the public function is visible on-chain. This reveals which contract made the call, though not necessarily which user initiated it. The `hide_msg_sender` flag on `FunctionCall` (used by `AppPayload`) can set msg_sender to zero for public calls, hiding even the calling contract.
+
+## Traced Example: AMM Swap Pipeline
+
+The AMM's `swap_exact_tokens_for_tokens` demonstrates the full private→enqueue→public pipeline:
+
+```
+PRIVATE PHASE (PXE):
+─────────────────────
+User calls AMM.swap_exact_tokens_for_tokens(token_in, token_out, 100, 90, nonce)
+│
+│  msg_sender = User's account address
+│
+├─ self.call(Token.transfer_to_public(user, AMM, 100, nonce))
+│     msg_sender = AMM address
+│     Token checks authwit: "Did User authorize AMM to transfer 100 tokens?"
+│     Nullifies user's private notes, creates public balance for AMM
+│
+├─ self.call(Token.prepare_private_balance_increase(user))
+│     msg_sender = AMM address
+│     Creates partial note commitment (user's identity + randomness, NO amount)
+│     Returns PartialUintNote to AMM
+│
+└─ self.enqueue_self._swap_exact_tokens_for_tokens(...)
+      Records call for public execution — does NOT run now
+
+PUBLIC PHASE (Sequencer):
+─────────────────────────
+AMM._swap_exact_tokens_for_tokens(token_in, token_out, 100, 90, partial_note)
+│
+│  msg_sender = AMM address (enqueued by self)
+│  #[only_self] verifies this
+│
+├─ Reads live pool balances (public state, now available)
+├─ Computes amount_out = 95 using constant-product formula
+├─ Asserts 95 >= 90 (amount_out_min)
+└─ Token.finalize_transfer_to_private(95, partial_note)
+      Completes the partial note with amount = 95
+      User's PXE reconstructs the full note on next sync
+```
+
 ## Reference
 `token_contract`, `amm_contract`, `fpc_contract`, `counter_contract`

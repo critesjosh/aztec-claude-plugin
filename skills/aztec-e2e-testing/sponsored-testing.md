@@ -79,6 +79,7 @@ import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import { EmbeddedWallet } from '@aztec/wallets/embedded';
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
+import { TxStatus } from "@aztec/stdlib/tx";
 
 describe("MyContract with Sponsored Fees", () => {
     let wallet: EmbeddedWallet;
@@ -132,7 +133,8 @@ describe("MyContract with Sponsored Fees", () => {
             wait: { timeout: getTimeouts().txTimeout },
         });
 
-        expect(tx.status).toBe("success");
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED])
+            .toContain(tx.status);
     }, 60000);
 });
 ```

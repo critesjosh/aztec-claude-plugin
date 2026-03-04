@@ -2,6 +2,12 @@
 
 Connect to Aztec nodes and initialize wallets for contract interaction.
 
+## What EmbeddedWallet.create() Does
+
+`EmbeddedWallet.create(node, options)` creates a full PXE (Private Execution Environment) instance on the user's device. It generates encryption and nullifier keys, connects to the specified Aztec node for block data, and starts a background sync loop that watches for new blocks containing notes addressed to the user. With `ephemeral: true`, all state lives in memory and is lost on exit — ideal for scripts and tests. With a `dataDirectory`, notes and keys are persisted to disk so the PXE doesn't need to rescan the chain on restart.
+
+For details on PXE internals, note discovery, and registration requirements, see [PXE Sync](./pxe-sync.md).
+
 ## Basic Wallet Setup
 
 ```typescript
