@@ -59,7 +59,9 @@ Here's exactly what happens when `#[authorize_once]` fires during a transaction:
 ```typescript
 // User authorizes AMM to call Token.transfer_in_private(user, to, amount, nonce)
 const action = token.methods.transfer_in_private(user.address, ammAddress, amount, nonce);
-const witness = await wallet.createAuthWit({ caller: ammAddress, action });
+// First arg: the address whose authority is being delegated (the token owner)
+// Second arg: who is allowed to call what
+const witness = await wallet.createAuthWit(user.address, { caller: ammAddress, action });
 ```
 
 The SDK computes:
@@ -108,7 +110,7 @@ In the AMM swap, the user must authorize the AMM to transfer their input tokens:
 TypeScript:
   const nonce = Fr.random();  // Unique per-swap
   const action = token.methods.transfer_to_public(user, amm, amount, nonce);
-  const witness = await wallet.createAuthWit({ caller: ammAddress, action });
+  const witness = await wallet.createAuthWit(user, { caller: ammAddress, action });
 
 Private Execution:
   AMM.swap_exact_tokens_for_tokens(token_in, token_out, amount, min_out, nonce)
