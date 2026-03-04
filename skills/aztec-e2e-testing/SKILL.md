@@ -10,6 +10,7 @@ Generate end-to-end tests for Aztec contracts against live networks. Vitest is t
 
 ## Subskills
 
+* [Integration Test Recipe](./integration-test-recipe.md) - Complete copy-paste-ready test with multi-account, authwit, cross-contract patterns
 * [Test Runner Setup](./jest-setup.md) - Vitest/Jest configuration and test structure
 * [Test Patterns](./test-patterns.md) - Common E2E test patterns
 * [Sponsored Testing](./sponsored-testing.md) - Testing with sponsored fees
@@ -26,6 +27,7 @@ import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { EmbeddedWallet } from '@aztec/wallets/embedded';
 import { AccountManager } from "@aztec/aztec.js/wallet";
+import { TxStatus } from "@aztec/stdlib/tx";
 import { getTimeouts } from "../../../config/config.js";
 
 describe("MyContract", () => {
@@ -74,7 +76,8 @@ describe("MyContract", () => {
             wait: { timeout: getTimeouts().txTimeout },
         });
 
-        expect(tx.status).toBe("success");
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED])
+            .toContain(tx.status);
     }, 60000);
 });
 ```

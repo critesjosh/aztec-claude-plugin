@@ -15,6 +15,8 @@ it("should deploy contract successfully", async () => {
 ## Testing Public Functions
 
 ```typescript
+import { TxStatus } from "@aztec/stdlib/tx";
+
 it("should execute public function", async () => {
     await contract.methods.create_item(itemId).simulate({ from: account.address });
     const tx = await contract.methods.create_item(itemId).send({
@@ -23,7 +25,9 @@ it("should execute public function", async () => {
         wait: { timeout: getTimeouts().txTimeout },
     });
 
-    expect(tx.status).toBe("success");
+    // A successful tx can be in any of these states depending on network progress
+    expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED])
+        .toContain(tx.status);
 }, 60000);
 ```
 
@@ -38,7 +42,8 @@ it("should execute private function", async () => {
         wait: { timeout: getTimeouts().txTimeout },
     });
 
-    expect(tx.status).toBe("success");
+    expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED])
+        .toContain(tx.status);
 }, 60000);
 ```
 
@@ -160,6 +165,8 @@ it("should complete full workflow", async () => {
 ## Helper Functions
 
 ```typescript
+import { TxStatus } from "@aztec/stdlib/tx";
+
 // Reusable transaction helper
 async function executeTx(
     contract: any,
@@ -176,7 +183,8 @@ async function executeTx(
         wait: { timeout },
     });
 
-    expect(tx.status).toBe("success");
+    expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED])
+        .toContain(tx.status);
     return tx;
 }
 

@@ -139,7 +139,10 @@ describe("MyContract", () => {
             wait: { timeout: getTimeouts().deployTimeout },
         });
 
-        await wallet.registerSender(account.address);
+        // Register this account as a sender so PXE can discover notes via tag-based lookup.
+        // Without this, other accounts' PXEs won't find notes sent by this account.
+        // Second argument is an optional human-readable label for debugging.
+        await wallet.registerSender(account.address, 'my-account');
 
         // 4. Deploy contract
         const deployRequest = MyContract.deploy(wallet, account.address);
@@ -210,7 +213,7 @@ export async function createTestContext(accountCount: number = 1): Promise<TestC
             wait: { timeout: getTimeouts().deployTimeout },
         });
 
-        await wallet.registerSender(account.address);
+        await wallet.registerSender(account.address, `account-${i}`);
         accounts.push(account);
     }
 
