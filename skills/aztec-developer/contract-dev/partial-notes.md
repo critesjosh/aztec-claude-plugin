@@ -19,6 +19,37 @@ The answer: The recipient creates an _incomplete_ note commitment in private (co
 3. **Public phase**: Complete the note by adding the amount
 4. **Note discovery**: Recipient's PXE matches the encrypted partial note log with the public completion log
 
+## Runtime Behavior
+
+Understanding what happens at each phase clarifies why partial notes work:
+
+### Private Phase (PXE)
+1. PXE computes a **partial note hash** from the known fields: owner identity, randomness, storage slot. The amount field is left as a placeholder.
+2. The partial note commitment is included in the kernel proof's outputs.
+3. An encrypted log is emitted containing the private fields (owner, randomness) so the recipient's PXE can later reconstruct the note.
+4. The `PartialUintNote` value (containing the partial hash) is passed as an argument to the enqueued public call.
+
+### Public Phase (Sequencer)
+1. The public function calls `complete(amount)` or `finalize_transfer_to_private(amount, partial_note)`.
+2. The final note hash is computed by combining the partial hash with the amount.
+3. The complete note hash is inserted into the note hash tree.
+4. A public log records the amount used for completion.
+
+### PXE Reconstruction (After Block Inclusion)
+1. Recipient's PXE already has the private fields (from the encrypted log in step 3 of private phase).
+2. PXE reads the public completion log to learn the amount.
+3. PXE reconstructs the complete note: owner + randomness + amount.
+4. Note is added to local database and becomes spendable.
+
+### AMM Example: Output Amount Unknown Until Public
+
+In the AMM's `swap_exact_tokens_for_tokens`:
+- **Private:** `prepare_private_balance_increase(sender)` creates a partial note for the user. The swap output amount is unknown — it depends on live pool balances.
+- **Public:** `_swap_exact_tokens_for_tokens` computes `amount_out` using the constant-product formula against live balances, then calls `finalize_transfer_to_private(amount_out, partial_note)` to complete it.
+- **PXE sync:** User's PXE combines the encrypted private fields with the public amount to reconstruct the full note.
+
+The same pattern applies to the AMM's `swap_tokens_for_exact_tokens`, which also creates a **change partial note** — the user sends max input tokens, and any unused amount is returned via a second partial note completed in public.
+
 ## PartialUintNote
 
 In Aztec v4, partial notes use the `PartialUintNote` type from the `uint_note` library:

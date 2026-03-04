@@ -12,6 +12,7 @@ Generate TypeScript code for interacting with Aztec contracts.
 
 * [Contract Client](./contract-client.md) - Type-safe contract interaction wrapper
 * [Wallet Setup](./wallet-setup.md) - Wallet and node connection patterns
+* [PXE Sync](./pxe-sync.md) - PXE internals, registerContract/registerSender, setup ordering, common pitfalls
 * [Transaction Patterns](./transaction-patterns.md) - Common transaction patterns
 * [AuthWit Frontend](./authwit-frontend.md) - Client-side authorization witness implementation
 

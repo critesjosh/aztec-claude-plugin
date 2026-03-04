@@ -11,6 +11,38 @@ Notes are encrypted UTXOs stored in a Merkle tree. Each note:
 
 When you "spend" a note, you emit a nullifier that marks it as consumed without revealing which note was used.
 
+## Note Lifecycle
+
+A note passes through five stages from creation to consumption:
+
+### 1. Created (Pending)
+`insert()` creates a note commitment during private execution. The note exists **locally in the creating PXE** but is not yet on chain. The encrypted note log is prepared for emission.
+
+### 2. Committed
+The transaction is included in a block. The note hash is added to the **note hash tree** (an append-only Merkle tree). If using `ONCHAIN_CONSTRAINED` or `ONCHAIN_UNCONSTRAINED` delivery, the encrypted log is posted on-chain as calldata.
+
+### 3. Discoverable
+The recipient's PXE scans encrypted logs from new blocks. Using shared tagging secrets (from `registerSender`), PXE identifies relevant logs, decrypts them with the recipient's encryption key, and adds the note to its local database. **This requires `registerContract`** — without it, PXE doesn't know how to interpret the logs.
+
+### 4. Consumable
+Once the note is in PXE's local database and the block is confirmed, the note can be used as input to new transactions. The PXE can prove membership of the note hash in the note hash tree.
+
+### 5. Nullified
+When the note is spent (via `pop_notes()`, `remove()`, or balance operations like `sub()`), a nullifier is published on-chain. The nullifier is derived from the note but does not reveal which note it corresponds to. The note can never be spent again — the protocol rejects any transaction that reuses a nullifier.
+
+### Pending Notes Within the Same Transaction
+
+Notes inserted earlier in a transaction **can be read and consumed later in the same transaction**. The kernel circuit handles this efficiently: if a note commitment and its nullifier both appear in the same transaction, they are "squashed" — neither the commitment nor the nullifier appears on-chain. This is an important optimization for flows where intermediate notes are created and immediately consumed.
+
+### When Notes Become Visible to the Recipient
+
+After a transaction creates a note, the recipient can use it once **all three conditions** are met:
+1. The transaction is included in a block
+2. The recipient's PXE syncs to that block
+3. PXE successfully decrypts the note log (requires `registerContract` and `registerSender`)
+
+This is why `wait: { timeout }` is used in transaction sends — it ensures block inclusion and PXE sync before proceeding.
+
 ## ⚠️ CRITICAL: Note Ownership and Nullification
 
 **Only the owner of a note can nullify (consume/replace/delete) it.**
