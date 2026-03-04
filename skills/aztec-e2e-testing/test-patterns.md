@@ -34,6 +34,8 @@ it("should execute public function", async () => {
 ## Testing Private Functions
 
 ```typescript
+import { TxStatus } from "@aztec/stdlib/tx";
+
 it("should execute private function", async () => {
     await contract.methods.transfer(recipient, amount).simulate({ from: sender.address });
     const tx = await contract.methods.transfer(recipient, amount).send({

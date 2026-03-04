@@ -82,12 +82,12 @@ The public call is **recorded but NOT executed** during private execution:
 - `msg_sender` in the public function = the contract that enqueued it
 - With `#[only_self]`: asserts `msg_sender == self.address` (the contract itself)
 
-### `self.view()` — Unconstrained Read
+### `self.view()` — Static (Read-Only) Call
 
-Runs **off-chain on PXE** without generating a proof:
-- Returns a value, but that value is **not proven correct** in the circuit
-- Reading potentially stale data (from PXE's last synced block)
-- Useful for off-chain queries, not for critical on-chain logic
+Makes a **static call** that cannot modify state:
+- In **private context**: executes on PXE, returns a value not proven in the circuit (potentially stale data from last synced block)
+- In **public context**: executes on the sequencer with current on-chain state, same trust model as other public calls
+- Useful for reading state from other contracts without side effects
 
 ### `self.set_as_teardown()` — Post-Execution Hook
 
