@@ -106,9 +106,13 @@ pub fn execute_calls(self, context: &mut PrivateContext) {
 
 ### msg_sender Through the Chain
 
-- **`entrypoint()` itself**: `msg_sender` is the account contract's own address (self-call from protocol)
+- **`entrypoint()` itself**: `msg_sender` is **None** (no caller exists for the first tx call — there are no EOAs in Aztec). Account contracts must use `self.context.maybe_msg_sender()`.
 - **App calls dispatched by `execute_calls()`**: `msg_sender` = the account contract's address (the user's identity)
 - **Nested calls from app contracts**: `msg_sender` = the calling contract's address
+- **Enqueued public calls**: `msg_sender` = the contract that enqueued it (visible on-chain!)
+- **Incognito enqueued calls** (`self.enqueue_incognito()`): `msg_sender` is **None** — target must use `maybe_msg_sender()`
+
+**API distinction:** `self.msg_sender()` returns `AztecAddress` but **panics if None**. Use `self.context.maybe_msg_sender()` → `Option<AztecAddress>` when None is possible (entrypoints, incognito calls).
 
 This is why `self.msg_sender()` in your app contract returns the user's account address — it's their account contract calling your contract.
 
