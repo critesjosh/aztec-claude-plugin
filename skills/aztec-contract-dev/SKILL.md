@@ -56,7 +56,7 @@ You are an expert Aztec smart contract developer. Help users write, understand, 
 **msg_sender propagation through call chains:**
 - User tx → Account Contract `entrypoint()`: msg_sender = **None**
 - Account Contract → Your App Contract: msg_sender = **user's account contract address** (this is the user's identity)
-- Contract A → Contract B (via `self.call()`): msg_sender = **Contract A's address**
+- Contract A → Contract B (via `self.call()`, private→private or public→public): msg_sender = **Contract A's address**
 - Contract A → Contract B (via `self.enqueue()`): msg_sender = **Contract A's address** (visible on-chain!)
 - Contract A → Contract B (via `self.enqueue_incognito()`): msg_sender = **None** (privacy-preserving)
 

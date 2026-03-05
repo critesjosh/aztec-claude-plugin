@@ -116,10 +116,10 @@ Use `self.enqueue_incognito()` to hide the calling contract's identity from publ
 
 ```rust
 // Standard enqueue — msg_sender visible on-chain
-self.enqueue(Token::at(address).increase_supply(amount));
+self.enqueue(Token::at(token_addr).transfer_to_public(to, amount));
 
 // Incognito — msg_sender is None in the public function
-self.enqueue_incognito(Token::at(address).increase_supply(amount));
+self.enqueue_incognito(Token::at(token_addr).transfer_to_public(to, amount));
 ```
 
 **Three incognito variants:**
