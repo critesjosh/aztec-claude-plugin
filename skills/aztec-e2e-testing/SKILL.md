@@ -8,6 +8,10 @@ allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 
 Generate end-to-end tests for Aztec contracts against live networks. Vitest is the default test runner in v4; Jest is also supported.
 
+## Code Philosophy
+
+You are writing application code, not library code. Application code should fail fast and loud. Do not add resilience patterns (retries, fallbacks, default values) unless explicitly requested. The developer's debugging experience is more important than the app "not crashing" — a crash with a clear error message is always better than silent misbehavior.
+
 ## Subskills
 
 * [Integration Test Recipe](./integration-test-recipe.md) - Complete copy-paste-ready test with multi-account, authwit, cross-contract patterns
