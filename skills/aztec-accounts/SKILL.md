@@ -8,6 +8,10 @@ allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 
 Create, deploy, and manage Aztec accounts with proper key management.
 
+## Code Philosophy
+
+You are writing application code, not library code. Application code should fail fast and loud. Do not add resilience patterns (retries, fallbacks, default values) unless explicitly requested. The developer's debugging experience is more important than the app "not crashing" — a crash with a clear error message is always better than silent misbehavior.
+
 ## Subskills
 
 * [Schnorr Accounts](./schnorr-accounts.md) - Creating and deploying Schnorr accounts
