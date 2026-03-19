@@ -1,0 +1,18 @@
+[
+  {"query": "Write an E2E test for a two-player game on Aztec", "should_trigger": true},
+  {"query": "Set up Jest for Aztec integration testing", "should_trigger": true},
+  {"query": "How do I test contract deployment against a live network?", "should_trigger": true},
+  {"query": "Write a test with multiple Aztec accounts interacting", "should_trigger": true},
+  {"query": "How do I test sponsored fee payment in my tests?", "should_trigger": true},
+  {"query": "Set up cross-wallet testing with two separate PXE instances", "should_trigger": true},
+  {"query": "How do I test transaction failure in Aztec E2E?", "should_trigger": true},
+  {"query": "What timeout values should I use for Aztec E2E tests?", "should_trigger": true},
+  {"query": "Write a TXE unit test for my contract", "should_trigger": false},
+  {"query": "Write a pytest for my Flask app", "should_trigger": false},
+  {"query": "How do notes work in Aztec?", "should_trigger": false},
+  {"query": "Deploy my contract to devnet", "should_trigger": false},
+  {"query": "Create a TypeScript client for my contract", "should_trigger": false},
+  {"query": "Review my contract for security", "should_trigger": false},
+  {"query": "Set up Cypress for my React app", "should_trigger": false},
+  {"query": "How do I compile my Aztec contract?", "should_trigger": false}
+]

@@ -1,0 +1,17 @@
+{
+  "preset": "ts-jest/presets/default-esm",
+  "testTimeout": 600000,
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  },
+  "transform": {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        "useESM": true,
+        "tsconfig": "tsconfig.json"
+      }
+    ]
+  },
+  "testMatch": ["./src/**/*.test.ts"]
+}

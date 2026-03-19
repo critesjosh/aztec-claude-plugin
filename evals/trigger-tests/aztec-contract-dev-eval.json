@@ -1,0 +1,16 @@
+[
+  {"query": "Write an Aztec contract with private balances", "should_trigger": true},
+  {"query": "How does msg_sender work in Aztec contracts?", "should_trigger": true},
+  {"query": "Implement a private transfer function", "should_trigger": true},
+  {"query": "Add access control to my Aztec function", "should_trigger": true},
+  {"query": "What note types should I use for my contract?", "should_trigger": true},
+  {"query": "How do I define storage in an Aztec contract?", "should_trigger": true},
+  {"query": "Implement a public-to-private bridge function", "should_trigger": true},
+  {"query": "What are the function visibility attributes in Aztec?", "should_trigger": true},
+  {"query": "Deploy my contract to devnet", "should_trigger": false},
+  {"query": "Write a TypeScript client for my contract", "should_trigger": false},
+  {"query": "Create an Aztec account", "should_trigger": false},
+  {"query": "Write a Solidity contract", "should_trigger": false},
+  {"query": "Set up Jest for E2E testing", "should_trigger": false},
+  {"query": "Review my contract for security", "should_trigger": false}
+]

@@ -1,0 +1,115 @@
+{
+  "skill": "aztec-contract-dev",
+  "description": "Assists with Aztec smart contract development using Noir and Aztec.nr",
+  "note": "RECOMMENDED FOR DEPRECATION — see overlap-matrix.md. Testing trigger accuracy to validate deprecation decision.",
+  "test_cases": [
+    {
+      "id": "CD-T01",
+      "prompt": "Write an Aztec contract with private balances",
+      "should_trigger": true,
+      "rationale": "Contract development — matches description",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "CD-T02",
+      "prompt": "How does msg_sender work in Aztec contracts?",
+      "should_trigger": true,
+      "rationale": "msg_sender behavior — key content in this skill",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "CD-T03",
+      "prompt": "Implement a private transfer function",
+      "should_trigger": true,
+      "rationale": "Private function implementation",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "CD-T04",
+      "prompt": "Add access control to my Aztec function",
+      "should_trigger": true,
+      "rationale": "Access control patterns",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "CD-T05",
+      "prompt": "What note types should I use for my contract?",
+      "should_trigger": true,
+      "rationale": "Note type selection",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "CD-T06",
+      "prompt": "How do I define storage in an Aztec contract?",
+      "should_trigger": true,
+      "rationale": "Storage definition",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "CD-T07",
+      "prompt": "Implement a public-to-private bridge function",
+      "should_trigger": true,
+      "rationale": "Private-public communication",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "CD-T08",
+      "prompt": "What are the function visibility attributes in Aztec?",
+      "should_trigger": true,
+      "rationale": "Function attributes",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "CD-N01",
+      "prompt": "Deploy my contract to devnet",
+      "should_trigger": false,
+      "rationale": "Deployment — should trigger aztec-deploy"
+    },
+    {
+      "id": "CD-N02",
+      "prompt": "Write a TypeScript client for my contract",
+      "should_trigger": false,
+      "rationale": "TS client — should trigger aztec-typescript"
+    },
+    {
+      "id": "CD-N03",
+      "prompt": "Create an Aztec account",
+      "should_trigger": false,
+      "rationale": "Account management — should trigger aztec-accounts"
+    },
+    {
+      "id": "CD-N04",
+      "prompt": "Write a Solidity contract",
+      "should_trigger": false,
+      "rationale": "Solidity — not Aztec"
+    },
+    {
+      "id": "CD-N05",
+      "prompt": "Set up Jest for E2E testing",
+      "should_trigger": false,
+      "rationale": "E2E setup — should trigger aztec-e2e-testing"
+    },
+    {
+      "id": "CD-N06",
+      "prompt": "Review my contract for security",
+      "should_trigger": false,
+      "rationale": "Review — should trigger review-contract"
+    }
+  ],
+  "conflict_prompts": [
+    {
+      "id": "CD-C01",
+      "prompt": "Write an Aztec contract with notes and test it",
+      "expected_skills": ["aztec-developer"],
+      "conflict_with": ["aztec-contract-dev", "aztec-testing"],
+      "rationale": "All 3 could trigger. Developer should win as the umbrella skill."
+    },
+    {
+      "id": "CD-C02",
+      "prompt": "Help me with my Aztec contract's storage layout",
+      "expected_skills": ["aztec-developer"],
+      "conflict_with": ["aztec-contract-dev"],
+      "rationale": "Both cover storage. Developer has deeper content (storage.md decision table)."
+    }
+  ]
+}

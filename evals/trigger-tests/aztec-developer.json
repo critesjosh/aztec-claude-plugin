@@ -1,0 +1,124 @@
+{
+  "skill": "aztec-developer",
+  "description": "Patterns for Aztec development: contracts, frontend, testing",
+  "test_cases": [
+    {
+      "id": "DEV-T01",
+      "prompt": "How do I set up a new Aztec project workspace?",
+      "should_trigger": true,
+      "rationale": "Direct workspace setup question — covered by developer/workspace/"
+    },
+    {
+      "id": "DEV-T02",
+      "prompt": "Explain how notes work in Aztec",
+      "should_trigger": true,
+      "rationale": "Core Aztec concept — covered by developer/contract-dev/notes.md"
+    },
+    {
+      "id": "DEV-T03",
+      "prompt": "Write a TXE unit test for my token contract",
+      "should_trigger": true,
+      "rationale": "TXE testing — covered by developer/txe/"
+    },
+    {
+      "id": "DEV-T04",
+      "prompt": "What's the transaction lifecycle in Aztec?",
+      "should_trigger": true,
+      "rationale": "Core concept — covered by developer/contract-dev/transaction-lifecycle.md"
+    },
+    {
+      "id": "DEV-T05",
+      "prompt": "How do I use cross-contract calls in Aztec?",
+      "should_trigger": true,
+      "rationale": "Contract dev topic — developer/contract-dev/cross-contract-calls.md"
+    },
+    {
+      "id": "DEV-T06",
+      "prompt": "Help me set up Nargo.toml dependencies for my contract",
+      "should_trigger": true,
+      "rationale": "Workspace config — developer/workspace/nargo-imports.md"
+    },
+    {
+      "id": "DEV-T07",
+      "prompt": "What storage types are available in Aztec?",
+      "should_trigger": true,
+      "rationale": "Storage patterns — developer/contract-dev/storage.md"
+    },
+    {
+      "id": "DEV-T08",
+      "prompt": "How do partial notes work?",
+      "should_trigger": true,
+      "rationale": "Advanced pattern — developer/contract-dev/partial-notes.md"
+    },
+    {
+      "id": "DEV-T09",
+      "prompt": "Compile my Aztec contract",
+      "should_trigger": true,
+      "rationale": "Compilation — developer/workspace/compilation-script.md"
+    },
+    {
+      "id": "DEV-N01",
+      "prompt": "Write a Solidity ERC-20 contract",
+      "should_trigger": false,
+      "rationale": "Solidity/Ethereum — not Aztec"
+    },
+    {
+      "id": "DEV-N02",
+      "prompt": "Help me with my Python script",
+      "should_trigger": false,
+      "rationale": "Generic programming — unrelated to Aztec"
+    },
+    {
+      "id": "DEV-N03",
+      "prompt": "Deploy a Next.js app to Vercel",
+      "should_trigger": false,
+      "rationale": "Web deployment — unrelated to Aztec"
+    },
+    {
+      "id": "DEV-N04",
+      "prompt": "Deploy my Aztec contract to devnet",
+      "should_trigger": false,
+      "rationale": "Deployment — should trigger aztec-deploy, not developer"
+    },
+    {
+      "id": "DEV-N05",
+      "prompt": "Create a Schnorr account for Aztec",
+      "should_trigger": false,
+      "rationale": "Account management — should trigger aztec-accounts"
+    },
+    {
+      "id": "DEV-N06",
+      "prompt": "Write an E2E test for my Aztec contract against the local network",
+      "should_trigger": false,
+      "rationale": "E2E testing — should trigger aztec-e2e-testing"
+    },
+    {
+      "id": "DEV-N07",
+      "prompt": "Write a SQL query to find all users",
+      "should_trigger": false,
+      "rationale": "Database — completely unrelated"
+    },
+    {
+      "id": "DEV-N08",
+      "prompt": "Review my Aztec contract for security issues",
+      "should_trigger": false,
+      "rationale": "Contract review — should trigger review-contract"
+    }
+  ],
+  "conflict_prompts": [
+    {
+      "id": "DEV-C01",
+      "prompt": "Help me write and test a token contract",
+      "expected_skills": ["aztec-developer"],
+      "conflict_with": ["aztec-contract-dev", "aztec-testing"],
+      "rationale": "Developer skill subsumes both contract-dev and testing. Should be primary trigger."
+    },
+    {
+      "id": "DEV-C02",
+      "prompt": "How do I test private state in Aztec?",
+      "expected_skills": ["aztec-developer"],
+      "conflict_with": ["aztec-testing", "aztec-e2e-testing"],
+      "rationale": "Ambiguous between TXE and E2E. Developer/txe/ should handle unless 'E2E' or 'network' is mentioned."
+    }
+  ]
+}

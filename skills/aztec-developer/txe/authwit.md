@@ -21,7 +21,7 @@ use aztec::{
 let nonce = unsafe { random() };
 let call_interface = Token::at(token_address)
     .transfer(from, caller, amount, nonce);
-authwit::add_private_authwit_from_call_interface(
+authwit::add_private_authwit_from_call(
     env,
     from,
     caller,
@@ -33,6 +33,6 @@ authwit::add_private_authwit_from_call_interface(
 
 The TXE will automatically wire up the authwit. All authwits use nonces - keep the nonce for the parent function call.
 
-For public authwit, use `add_public_authwit_from_call_interface` instead.
+For public authwit, use `add_public_authwit_from_call` instead.
 
 If this authwit pattern appears frequently throughout your tests, consider extracting it into a reusable utility module at tests/utils/{contract_name}.nr to minimize code repetition.

@@ -1,0 +1,111 @@
+{
+  "skill": "aztec-accounts",
+  "description": "Manage Aztec accounts including Schnorr account creation, deployment, and recovery",
+  "test_cases": [
+    {
+      "id": "ACC-T01",
+      "prompt": "Create a new Schnorr account for Aztec",
+      "should_trigger": true,
+      "rationale": "Direct account creation request"
+    },
+    {
+      "id": "ACC-T02",
+      "prompt": "How do I recover an Aztec account from saved credentials?",
+      "should_trigger": true,
+      "rationale": "Account recovery — covered by account-recovery.md"
+    },
+    {
+      "id": "ACC-T03",
+      "prompt": "Deploy my Aztec account contract",
+      "should_trigger": true,
+      "rationale": "Account deployment flow"
+    },
+    {
+      "id": "ACC-T04",
+      "prompt": "What keys do I need to save after creating an Aztec account?",
+      "should_trigger": true,
+      "rationale": "Key management guidance"
+    },
+    {
+      "id": "ACC-T05",
+      "prompt": "How do Aztec account types differ?",
+      "should_trigger": true,
+      "rationale": "Account type comparison (Schnorr vs ECDSA)"
+    },
+    {
+      "id": "ACC-T06",
+      "prompt": "Generate secret key and signing key for an Aztec wallet",
+      "should_trigger": true,
+      "rationale": "Key generation — core account skill"
+    },
+    {
+      "id": "ACC-T07",
+      "prompt": "Load my Aztec account from environment variables",
+      "should_trigger": true,
+      "rationale": "Account recovery from .env"
+    },
+    {
+      "id": "ACC-T08",
+      "prompt": "Why does my Aztec account deployment use AztecAddress.ZERO?",
+      "should_trigger": true,
+      "rationale": "Account deployment specifics"
+    },
+    {
+      "id": "ACC-N01",
+      "prompt": "Create an Ethereum wallet with MetaMask",
+      "should_trigger": false,
+      "rationale": "Ethereum wallet — not Aztec"
+    },
+    {
+      "id": "ACC-N02",
+      "prompt": "Write an Aztec smart contract",
+      "should_trigger": false,
+      "rationale": "Contract development — should trigger aztec-developer"
+    },
+    {
+      "id": "ACC-N03",
+      "prompt": "Deploy my contract to devnet",
+      "should_trigger": false,
+      "rationale": "Contract deployment — should trigger aztec-deploy"
+    },
+    {
+      "id": "ACC-N04",
+      "prompt": "How do notes work in Aztec?",
+      "should_trigger": false,
+      "rationale": "Core concept — should trigger aztec-developer"
+    },
+    {
+      "id": "ACC-N05",
+      "prompt": "Write an E2E test",
+      "should_trigger": false,
+      "rationale": "Testing — should trigger aztec-e2e-testing"
+    },
+    {
+      "id": "ACC-N06",
+      "prompt": "Set up a TypeScript client for my Aztec contract",
+      "should_trigger": false,
+      "rationale": "TS integration — should trigger aztec-typescript"
+    },
+    {
+      "id": "ACC-N07",
+      "prompt": "Help me manage my PostgreSQL users",
+      "should_trigger": false,
+      "rationale": "Database — completely unrelated"
+    },
+    {
+      "id": "ACC-N08",
+      "prompt": "Review this contract for security issues",
+      "should_trigger": false,
+      "rationale": "Review — should trigger review-contract"
+    }
+  ],
+  "conflict_prompts": [
+    {
+      "id": "ACC-C01",
+      "prompt": "Create a Schnorr account, deploy it, and interact with a contract",
+      "expected_skills": ["aztec-accounts", "aztec-deploy"],
+      "conflict_with": ["aztec-typescript"],
+      "rationale": "Account creation is accounts, deployment+interaction could be deploy or typescript"
+    }
+  ]
+}

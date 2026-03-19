@@ -1,0 +1,19 @@
+[
+  {"query": "How do I set up a new Aztec project workspace?", "should_trigger": true},
+  {"query": "Explain how notes work in Aztec", "should_trigger": true},
+  {"query": "Write a TXE unit test for my token contract", "should_trigger": true},
+  {"query": "What's the transaction lifecycle in Aztec?", "should_trigger": true},
+  {"query": "How do I use cross-contract calls in Aztec?", "should_trigger": true},
+  {"query": "Help me set up Nargo.toml dependencies for my contract", "should_trigger": true},
+  {"query": "What storage types are available in Aztec?", "should_trigger": true},
+  {"query": "How do partial notes work?", "should_trigger": true},
+  {"query": "Compile my Aztec contract", "should_trigger": true},
+  {"query": "Write a Solidity ERC-20 contract", "should_trigger": false},
+  {"query": "Help me with my Python script", "should_trigger": false},
+  {"query": "Deploy a Next.js app to Vercel", "should_trigger": false},
+  {"query": "Deploy my Aztec contract to devnet", "should_trigger": false},
+  {"query": "Create a Schnorr account for Aztec", "should_trigger": false},
+  {"query": "Write an E2E test for my Aztec contract against the local network", "should_trigger": false},
+  {"query": "Write a SQL query to find all users", "should_trigger": false},
+  {"query": "Review my Aztec contract for security issues", "should_trigger": false}
+]

@@ -1,0 +1,114 @@
+{
+  "skill": "aztec-testing",
+  "description": "Assists with testing Aztec smart contracts using the TestEnvironment",
+  "note": "RECOMMENDED FOR DEPRECATION — see overlap-matrix.md. Testing trigger accuracy to validate deprecation decision.",
+  "test_cases": [
+    {
+      "id": "TST-T01",
+      "prompt": "Write a unit test for my Aztec token contract",
+      "should_trigger": true,
+      "rationale": "Unit testing — matches description",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "TST-T02",
+      "prompt": "How do I set up TestEnvironment for Aztec tests?",
+      "should_trigger": true,
+      "rationale": "TXE setup — core skill content",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "TST-T03",
+      "prompt": "Test access control with should_fail",
+      "should_trigger": true,
+      "rationale": "Test attributes",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "TST-T04",
+      "prompt": "Debug why my Aztec test is failing",
+      "should_trigger": true,
+      "rationale": "Test debugging — unique content here"
+    },
+    {
+      "id": "TST-T05",
+      "prompt": "How do I test private functions in TXE?",
+      "should_trigger": true,
+      "rationale": "Private function testing",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "TST-T06",
+      "prompt": "Create test helper functions for my Aztec project",
+      "should_trigger": true,
+      "rationale": "Test helpers",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "TST-T07",
+      "prompt": "What account types are available in TestEnvironment?",
+      "should_trigger": true,
+      "rationale": "Test account types",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "TST-T08",
+      "prompt": "Run aztec test command for my contract",
+      "should_trigger": true,
+      "rationale": "Test execution",
+      "also_triggers": ["aztec-developer"]
+    },
+    {
+      "id": "TST-N01",
+      "prompt": "Write an E2E test against the live network",
+      "should_trigger": false,
+      "rationale": "E2E testing — should trigger aztec-e2e-testing"
+    },
+    {
+      "id": "TST-N02",
+      "prompt": "Deploy my contract to devnet",
+      "should_trigger": false,
+      "rationale": "Deployment — should trigger aztec-deploy"
+    },
+    {
+      "id": "TST-N03",
+      "prompt": "Write a React component test with Jest",
+      "should_trigger": false,
+      "rationale": "Frontend testing — unrelated"
+    },
+    {
+      "id": "TST-N04",
+      "prompt": "Create an Aztec account",
+      "should_trigger": false,
+      "rationale": "Account management — should trigger aztec-accounts"
+    },
+    {
+      "id": "TST-N05",
+      "prompt": "Write a TypeScript client for my contract",
+      "should_trigger": false,
+      "rationale": "TS client — should trigger aztec-typescript"
+    },
+    {
+      "id": "TST-N06",
+      "prompt": "Review my contract for security issues",
+      "should_trigger": false,
+      "rationale": "Review — should trigger review-contract"
+    }
+  ],
+  "conflict_prompts": [
+    {
+      "id": "TST-C01",
+      "prompt": "Help me test my Aztec contract",
+      "expected_skills": ["aztec-developer"],
+      "conflict_with": ["aztec-testing", "aztec-e2e-testing"],
+      "rationale": "Ambiguous 'test' — no qualifier. Developer should be primary, since it covers both TXE and general patterns."
+    },
+    {
+      "id": "TST-C02",
+      "prompt": "Write integration tests for my Aztec contract",
+      "expected_skills": ["aztec-e2e-testing"],
+      "conflict_with": ["aztec-testing"],
+      "rationale": "aztec-testing description says 'integration tests' but that should be e2e-testing's domain."
+    }
+  ]
+}

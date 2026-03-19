@@ -4,7 +4,7 @@
       "command": "npx",
       "args": ["--prefer-online", "-y", "@aztec/mcp-server@latest"],
       "env": {
-        "AZTEC_DEFAULT_VERSION": "v4.0.0-devnet.2-patch.1"
+        "AZTEC_DEFAULT_VERSION": "v4.1.0-rc.2"
       }
     }
   }

@@ -1,0 +1,118 @@
+{
+  "skill": "aztec-typescript",
+  "description": "Generate TypeScript client code for interacting with Aztec contracts",
+  "test_cases": [
+    {
+      "id": "TS-T01",
+      "prompt": "Create a TypeScript client for a deployed Aztec contract",
+      "should_trigger": true,
+      "rationale": "Direct TS client request — core skill"
+    },
+    {
+      "id": "TS-T02",
+      "prompt": "How do I connect to an Aztec node from TypeScript?",
+      "should_trigger": true,
+      "rationale": "Wallet/node setup — covered by wallet-setup.md"
+    },
+    {
+      "id": "TS-T03",
+      "prompt": "How does PXE note discovery work?",
+      "should_trigger": true,
+      "rationale": "PXE internals — covered by pxe-sync.md"
+    },
+    {
+      "id": "TS-T04",
+      "prompt": "Implement authwit authorization in TypeScript",
+      "should_trigger": true,
+      "rationale": "AuthWit frontend — covered by authwit-frontend.md"
+    },
+    {
+      "id": "TS-T05",
+      "prompt": "What's the correct pattern for simulate then send?",
+      "should_trigger": true,
+      "rationale": "Transaction patterns — covered by transaction-patterns.md"
+    },
+    {
+      "id": "TS-T06",
+      "prompt": "Register a contract with my wallet's PXE",
+      "should_trigger": true,
+      "rationale": "Contract registration — covered by pxe-sync.md"
+    },
+    {
+      "id": "TS-T07",
+      "prompt": "Set up EmbeddedWallet for my Aztec app",
+      "should_trigger": true,
+      "rationale": "Wallet setup — covered by wallet-setup.md"
+    },
+    {
+      "id": "TS-T08",
+      "prompt": "Use the generated TypeScript artifacts from aztec codegen",
+      "should_trigger": true,
+      "rationale": "Artifact usage — covered in SKILL.md"
+    },
+    {
+      "id": "TS-N01",
+      "prompt": "Write a React component",
+      "should_trigger": false,
+      "rationale": "Generic React — not Aztec-specific"
+    },
+    {
+      "id": "TS-N02",
+      "prompt": "Write a TXE unit test",
+      "should_trigger": false,
+      "rationale": "TXE testing — should trigger aztec-developer"
+    },
+    {
+      "id": "TS-N03",
+      "prompt": "Deploy my Aztec contract",
+      "should_trigger": false,
+      "rationale": "Deployment — should trigger aztec-deploy"
+    },
+    {
+      "id": "TS-N04",
+      "prompt": "How do notes work in Aztec?",
+      "should_trigger": false,
+      "rationale": "Core concept — should trigger aztec-developer"
+    },
+    {
+      "id": "TS-N05",
+      "prompt": "Create a Schnorr account",
+      "should_trigger": false,
+      "rationale": "Account management — should trigger aztec-accounts"
+    },
+    {
+      "id": "TS-N06",
+      "prompt": "Set up Express.js API routes",
+      "should_trigger": false,
+      "rationale": "Backend web dev — unrelated"
+    },
+    {
+      "id": "TS-N07",
+      "prompt": "Write an E2E test for my Aztec contract",
+      "should_trigger": false,
+      "rationale": "E2E testing — should trigger aztec-e2e-testing"
+    },
+    {
+      "id": "TS-N08",
+      "prompt": "Review my contract for security",
+      "should_trigger": false,
+      "rationale": "Review — should trigger review-contract"
+    }
+  ],
+  "conflict_prompts": [
+    {
+      "id": "TS-C01",
+      "prompt": "Set up wallet and deploy my contract",
+      "expected_skills": ["aztec-deploy"],
+      "conflict_with": ["aztec-typescript"],
+      "rationale": "Wallet setup overlaps. 'Deploy' is the primary intent."
+    },
+    {
+      "id": "TS-C02",
+      "prompt": "Write a TypeScript test for my Aztec contract",
+      "expected_skills": ["aztec-e2e-testing"],
+      "conflict_with": ["aztec-typescript"],
+      "rationale": "'TypeScript test' is E2E testing, not client code generation."
+    }
+  ]
+}

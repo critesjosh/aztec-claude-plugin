@@ -257,14 +257,14 @@ Use these before creating custom notes:
 
 - **`UintNote`** - Stores a `U128` value with owner. Used by token balances.
 - **`PartialUintNote`** - Partially constructed `UintNote` for partial notes flow. Used with `complete` to finalize.
-- **`ValueNote`** - Stores a `Field` value with owner. General purpose.
+- **`FieldNote`** - Stores a `Field` value. General purpose.
 - **`AddressNote`** - Stores an `AztecAddress`. Used for private address storage.
 
 ```rust
 use uint_note::UintNote;
 use uint_note::PartialUintNote;
 // or
-use value_note::value_note::ValueNote;
+use field_note::FieldNote;
 ```
 
 ## Defining Custom Notes
@@ -287,7 +287,7 @@ pub struct MyNote {
 }
 ```
 
-The `#[note]` macro auto-implements `NoteHash` and `NullifiableNote` traits.
+The `#[note]` macro auto-implements `NoteHash` and `NoteType` traits.
 
 ## Working with Notes
 
@@ -315,4 +315,4 @@ When inserting notes, you must emit them so the recipient can discover them:
 
 ## Reference
 `token_contract` - `UintNote` for balances
-`value_note` library - `ValueNote` implementation
+`field_note` library - `FieldNote` implementation

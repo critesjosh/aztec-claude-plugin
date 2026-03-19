@@ -1,0 +1,118 @@
+{
+  "skill": "aztec-e2e-testing",
+  "description": "Generate end-to-end tests for Aztec contracts with real network interaction",
+  "test_cases": [
+    {
+      "id": "E2E-T01",
+      "prompt": "Write an E2E test for a two-player game on Aztec",
+      "should_trigger": true,
+      "rationale": "Direct E2E test request"
+    },
+    {
+      "id": "E2E-T02",
+      "prompt": "Set up Jest for Aztec integration testing",
+      "should_trigger": true,
+      "rationale": "Test runner setup — covered by jest-setup.md"
+    },
+    {
+      "id": "E2E-T03",
+      "prompt": "How do I test contract deployment against a live network?",
+      "should_trigger": true,
+      "rationale": "Live network testing — core E2E skill"
+    },
+    {
+      "id": "E2E-T04",
+      "prompt": "Write a test with multiple Aztec accounts interacting",
+      "should_trigger": true,
+      "rationale": "Multi-account E2E — covered by integration-test-recipe.md"
+    },
+    {
+      "id": "E2E-T05",
+      "prompt": "How do I test sponsored fee payment in my tests?",
+      "should_trigger": true,
+      "rationale": "Fee payment in tests — covered by sponsored-testing.md"
+    },
+    {
+      "id": "E2E-T06",
+      "prompt": "Set up cross-wallet testing with two separate PXE instances",
+      "should_trigger": true,
+      "rationale": "Cross-wallet E2E — covered in integration-test-recipe.md"
+    },
+    {
+      "id": "E2E-T07",
+      "prompt": "How do I test transaction failure in Aztec E2E?",
+      "should_trigger": true,
+      "rationale": "Error testing patterns — covered by test-patterns.md"
+    },
+    {
+      "id": "E2E-T08",
+      "prompt": "What timeout values should I use for Aztec E2E tests?",
+      "should_trigger": true,
+      "rationale": "Timeout config — covered by jest-setup.md"
+    },
+    {
+      "id": "E2E-N01",
+      "prompt": "Write a TXE unit test for my contract",
+      "should_trigger": false,
+      "rationale": "TXE testing — should trigger aztec-developer (not E2E)"
+    },
+    {
+      "id": "E2E-N02",
+      "prompt": "Write a pytest for my Flask app",
+      "should_trigger": false,
+      "rationale": "Python testing — unrelated"
+    },
+    {
+      "id": "E2E-N03",
+      "prompt": "How do notes work in Aztec?",
+      "should_trigger": false,
+      "rationale": "Core concept — should trigger aztec-developer"
+    },
+    {
+      "id": "E2E-N04",
+      "prompt": "Deploy my contract to devnet",
+      "should_trigger": false,
+      "rationale": "Deployment — should trigger aztec-deploy"
+    },
+    {
+      "id": "E2E-N05",
+      "prompt": "Create a TypeScript client for my contract",
+      "should_trigger": false,
+      "rationale": "Client code — should trigger aztec-typescript"
+    },
+    {
+      "id": "E2E-N06",
+      "prompt": "Review my contract for security",
+      "should_trigger": false,
+      "rationale": "Review — should trigger review-contract"
+    },
+    {
+      "id": "E2E-N07",
+      "prompt": "Set up Cypress for my React app",
+      "should_trigger": false,
+      "rationale": "Frontend E2E — unrelated to Aztec"
+    },
+    {
+      "id": "E2E-N08",
+      "prompt": "How do I compile my Aztec contract?",
+      "should_trigger": false,
+      "rationale": "Compilation — should trigger aztec-developer"
+    }
+  ],
+  "conflict_prompts": [
+    {
+      "id": "E2E-C01",
+      "prompt": "Write a test for my contract that runs on the local network",
+      "expected_skills": ["aztec-e2e-testing"],
+      "conflict_with": ["aztec-testing"],
+      "rationale": "'local network' signals E2E, not TXE. But 'test' alone is ambiguous."
+    },
+    {
+      "id": "E2E-C02",
+      "prompt": "How do I test private state?",
+      "expected_skills": ["aztec-developer"],
+      "conflict_with": ["aztec-testing", "aztec-e2e-testing"],
+      "rationale": "Could be TXE or E2E. Without 'network' qualifier, should default to aztec-developer/txe/."
+    }
+  ]
+}

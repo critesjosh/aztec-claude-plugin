@@ -2,7 +2,7 @@
 
 A Claude Code plugin for Aztec smart contract and application development. This plugin provides specialized agents, skills, and commands to help you build privacy-preserving applications on the Aztec Network.
 
-⚠️ This plugin defaults to Aztec version `v4.0.0-devnet.2-patch.1`. See [Switching Versions](#switching-versions) to use a different version.
+⚠️ This plugin defaults to Aztec version `v4.1.0-rc.2`. See [Switching Versions](#switching-versions) to use a different version.
 
 ## Installation
 
@@ -139,53 +139,20 @@ Find available versions at [aztec-packages tags](https://github.com/AztecProtoco
 
 ### Skills
 
-#### Noir Contract Development
+**Aztec Developer** (`aztec-developer`)
 
-**Aztec Developer** (`aztec-developer`) - _Comprehensive_
-
-- Complete patterns for Aztec development
+- Framework-specific knowledge that prevents hallucinations (Noir overflow semantics, note randomness, storage indexing)
 - Contract structure, storage, notes, cross-contract calls
-- TXE unit testing with setup patterns
-- Workspace configuration and compilation
+- TXE unit testing patterns
+- Privacy patterns (`enqueue_incognito`, `pop_notes` vs `get_notes`)
 - Based on [aztec-claude-skill](https://github.com/jp4g/aztec-claude-skill)
 
-**Aztec Contract Development** (`aztec-contract-dev`)
+**Contract Review** (`review-contract`)
 
-- Assists with writing and modifying contracts
-- Implements private/public functions
-- Manages state and notes
-
-**Aztec Testing** (`aztec-testing`)
-
-- Helps write unit and integration tests
-- Uses TestEnvironment patterns
-- Debugs test failures
-
-#### TypeScript Integration (NEW)
-
-**Aztec Deploy** (`aztec-deploy`)
-
-- Generate TypeScript deployment scripts
-- Fee payment configuration (Sponsored, Private, Public)
-- Environment configuration (local network, devnet)
-
-**Aztec Accounts** (`aztec-accounts`)
-
-- Schnorr account creation and deployment
-- Account recovery from credentials
-- Key management patterns
-
-**Aztec TypeScript** (`aztec-typescript`)
-
-- TypeScript client code generation
-- Wallet setup and configuration
-- Transaction patterns and error handling
-
-**Aztec E2E Testing** (`aztec-e2e-testing`)
-
-- Jest E2E test generation
-- Sponsored fee testing patterns
-- Multi-user test scenarios
+- Structured security review with severity levels
+- Aztec-specific pitfall checklist (note ownership, privacy leaks, msg_sender)
+- "What's Done Well" positive feedback section
+- MCP server verification of patterns
 
 #### Utilities
 
@@ -253,35 +220,12 @@ aztec-plugin/
 │   ├── deploy.md            # Generate deployment script
 │   └── generate-client.md   # Generate TypeScript client
 ├── skills/
-│   ├── aztec-developer/     # Comprehensive dev patterns
-│   │   ├── SKILL.md
-│   │   ├── contract-dev/    # Contract patterns
-│   │   ├── txe/             # Testing patterns
+│   ├── aztec-developer/     # Framework knowledge + dev patterns
+│   │   ├── SKILL.md         # Gotchas, hallucination prevention
+│   │   ├── contract-dev/    # Storage, notes, cross-contract calls
+│   │   ├── txe/             # TXE testing patterns
 │   │   └── workspace/       # Project setup
-│   ├── aztec-contract-dev/
-│   │   └── SKILL.md
-│   ├── aztec-testing/
-│   │   └── SKILL.md
-│   ├── aztec-deploy/        # TypeScript deployment (NEW)
-│   │   ├── SKILL.md
-│   │   ├── deploy-script.md
-│   │   ├── fee-payment.md
-│   │   └── environment-config.md
-│   ├── aztec-accounts/      # Account management (NEW)
-│   │   ├── SKILL.md
-│   │   ├── schnorr-accounts.md
-│   │   └── account-recovery.md
-│   ├── aztec-typescript/    # TypeScript integration (NEW)
-│   │   ├── SKILL.md
-│   │   ├── contract-client.md
-│   │   ├── wallet-setup.md
-│   │   └── transaction-patterns.md
-│   ├── aztec-e2e-testing/   # E2E testing (NEW)
-│   │   ├── SKILL.md
-│   │   ├── jest-setup.md
-│   │   ├── test-patterns.md
-│   │   └── sponsored-testing.md
-│   └── aztec-version/       # Version switching (NEW)
+│   └── review-contract/     # Security review workflow
 │       └── SKILL.md
 ├── CLAUDE.md                # Development guidelines
 └── README.md                # This file

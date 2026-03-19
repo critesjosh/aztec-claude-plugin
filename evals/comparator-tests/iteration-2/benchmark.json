@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "iteration": 2,
+    "date": "2026-03-19",
+    "model": "sonnet",
+    "aztec_version": "4.1.0-rc.2",
+    "test_bed": "aztec-starter (testnet branch)",
+    "plugin_dir": "/workspaces/sandbox/aztec-claude-plugin",
+    "methodology": "Each prompt run via `claude -p` with tools ENABLED (can read codebase). With-skill uses --plugin-dir; without-skill uses vanilla Claude. Graded against predefined assertions from evals.json. Key difference from iteration-1: Claude can now read actual source files, so baseline quality is higher.",
+    "tests_executed": 4,
+    "tests_total": 10
+  },
+  "results": {
+    "CMP-02": {
+      "prompt": "Write a TypeScript deployment script that deploys the PodRacing contract to the local network",
+      "skill": "aztec-deploy",
+      "with_skill": {
+        "content": 4, "structure": 4,
+        "assertions_passed": "N/A — both found existing script",
+        "notes": "Found existing deploy_contract.ts, described it accurately. Mentioned simulate-before-send, SponsoredFPC, CLAUDE.md patterns."
+      },
+      "without_skill": {
+        "content": 4, "structure": 4,
+        "assertions_passed": "N/A — both found existing script",
+        "notes": "Also found existing script, described it accurately. Very similar output."
+      },
+      "delta": { "content": "0", "structure": "0", "notes": "Wash — both read the existing script and described it. With tools enabled, vanilla Claude can read the codebase and give accurate answers." }
+    },
+    "CMP-03": {
+      "prompt": "Write a complete E2E test for a two-player PodRacing game lifecycle",
+      "skill": "aztec-e2e-testing",
+      "with_skill": {
+        "content": 5, "structure": 5,
+        "assertions_passed": "8/8",
+        "notes": "Created game_lifecycle.test.ts. Deterministic strategies, simulate-before-send, registerSender, all correct imports, getTimeouts, 600s beforeAll, TxStatus checks. Separate it blocks per phase."
+      },
+      "without_skill": {
+        "content": 5, "structure": 5,
+        "assertions_passed": "8/8",
+        "notes": "Created lifecycle.test.ts (322 lines). ALSO excellent: deterministic strategies, EthCheatCodes for block advancement, simulate-before-send, all correct imports. Single comprehensive it block with all 7 phases. Actually includes finalize_game with cheat codes."
+      },
+      "delta": { "content": "0", "structure": "0", "notes": "BOTH EXCELLENT. With tools enabled, vanilla Claude read index.test.ts and replicated all patterns perfectly. The without-skill version even added EthCheatCodes for block advancement. This is the biggest change from iteration-1 (where without-skill produced NO output)." }
+    },
+    "CMP-06": {
+      "prompt": "Review the PodRacing contract for security issues, correctness, and best practices",
+      "skill": "review-contract",
+      "with_skill": {
+        "content": 5, "structure": 5,
+        "assertions_passed": "7/8",
+        "notes": "10 issues (3 HIGH, 3 MEDIUM, 4 LOW). Identifies: finalize_game repeatable, get_notes→pop_notes (Aztec-specific), no reveal check, play before join, double-reveal zero-score. Includes 'What's Done Well' (5 points). References pop_notes API and simulate-before-send TS discipline."
+      },
+      "without_skill": {
+        "content": 4, "structure": 4,
+        "assertions_passed": "5/8",
+        "notes": "11 issues (1 Critical, 1 High, 3 Medium, 6 Low). Correctly identifies finalize repeatable, no reveal check, play before join, zero-score bypass, tie-breaking bias. No 'What's Done Well' section. No MCP. No pop_notes recommendation. No hallucinations (reads actual code)."
+      },
+      "delta": { "content": "+1", "structure": "+1", "notes": "Skill still adds value: 'What's Done Well' section, pop_notes Aztec-specific knowledge, structured review workflow. Without skill is MUCH better than iteration-1 (no hallucinations now), but skill provides Aztec-framework-specific insights beyond what's in the code." }
+    },
+    "CMP-09": {
+      "prompt": "Walk me through creating a Schnorr account, deploying, saving credentials, and recovering",
+      "skill": "aztec-accounts",
+      "with_skill": {
+        "content": 5, "structure": 5,
+        "assertions_passed": "7/7",
+        "notes": "Correct v4 API throughout. Mentions AztecAddress.ZERO rationale, save-before-deploy emphasis, testnet fee bridging, key points table. References actual project files."
+      },
+      "without_skill": {
+        "content": 5, "structure": 5,
+        "assertions_passed": "7/7",
+        "notes": "Also correct v4 API. Also mentions AztecAddress.ZERO, testnet bridging, recovery pattern. References actual code files. Very similar quality."
+      },
+      "delta": { "content": "0", "structure": "0", "notes": "Wash — both read the actual deploy_account.ts and create_account_from_env.ts files and produced accurate, v4-correct walkthroughs. Tools access eliminates the API version gap." }
+    }
+  },
+  "aggregate": {
+    "comparator_tests": {
+      "with_skill_mean_content": 4.75,
+      "without_skill_mean_content": 4.5,
+      "content_delta": "+0.25",
+      "with_skill_mean_structure": 4.75,
+      "without_skill_mean_structure": 4.5,
+      "structure_delta": "+0.25"
+    },
+    "key_finding": "With tools enabled, the skill delta collapses from +60.7% (iteration-1) to near-zero. The primary value of skills shifts from 'teaching correct APIs' to 'providing framework-specific insights beyond what's in the code' (e.g., pop_notes, structured review workflow, What's Done Well sections).",
+    "where_skills_still_add_value": [
+      "Contract review structure (What's Done Well, severity levels, actionable fixes)",
+      "Aztec framework knowledge beyond the codebase (pop_notes vs get_notes)",
+      "Review workflow discipline (MCP verification, structured output format)",
+      "Cross-cutting patterns the codebase doesn't document (simulate-before-send rationale)"
+    ],
+    "where_skills_are_redundant": [
+      "Import paths (Claude reads package.json and existing code)",
+      "API patterns (Claude copies from existing test files)",
+      "Project structure (Claude discovers via file exploration)",
+      "Version-specific patterns (Claude reads Nargo.toml and config files)"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+[
+  {"query": "Write a unit test for my Aztec token contract", "should_trigger": true},
+  {"query": "How do I set up TestEnvironment for Aztec tests?", "should_trigger": true},
+  {"query": "Test access control with should_fail", "should_trigger": true},
+  {"query": "Debug why my Aztec test is failing", "should_trigger": true},
+  {"query": "How do I test private functions in TXE?", "should_trigger": true},
+  {"query": "Create test helper functions for my Aztec project", "should_trigger": true},
+  {"query": "What account types are available in TestEnvironment?", "should_trigger": true},
+  {"query": "Run aztec test command for my contract", "should_trigger": true},
+  {"query": "Write an E2E test against the live network", "should_trigger": false},
+  {"query": "Deploy my contract to devnet", "should_trigger": false},
+  {"query": "Write a React component test with Jest", "should_trigger": false},
+  {"query": "Create an Aztec account", "should_trigger": false},
+  {"query": "Write a TypeScript client for my contract", "should_trigger": false},
+  {"query": "Review my contract for security issues", "should_trigger": false}
+]

@@ -1,0 +1,18 @@
+[
+  {"query": "Review this contract for security issues", "should_trigger": true},
+  {"query": "/review-contract src/main.nr", "should_trigger": true},
+  {"query": "Check my Aztec contract for common pitfalls", "should_trigger": true},
+  {"query": "Is my note ownership pattern correct?", "should_trigger": true},
+  {"query": "Audit the access control in my Aztec contract", "should_trigger": true},
+  {"query": "Are there any privacy leaks in my contract?", "should_trigger": true},
+  {"query": "Review my contract's function visibility", "should_trigger": true},
+  {"query": "Can you check if I'm using msg_sender correctly?", "should_trigger": true},
+  {"query": "Write a new Aztec contract", "should_trigger": false},
+  {"query": "Deploy my contract", "should_trigger": false},
+  {"query": "Write tests for my contract", "should_trigger": false},
+  {"query": "Review my Python code for bugs", "should_trigger": false},
+  {"query": "Explain how notes work in Aztec", "should_trigger": false},
+  {"query": "Create an account on Aztec", "should_trigger": false},
+  {"query": "Set up TypeScript client for my contract", "should_trigger": false},
+  {"query": "Help me configure ESLint", "should_trigger": false}
+]

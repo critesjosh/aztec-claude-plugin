@@ -1,0 +1,18 @@
+[
+  {"query": "Create a new Schnorr account for Aztec", "should_trigger": true},
+  {"query": "How do I recover an Aztec account from saved credentials?", "should_trigger": true},
+  {"query": "Deploy my Aztec account contract", "should_trigger": true},
+  {"query": "What keys do I need to save after creating an Aztec account?", "should_trigger": true},
+  {"query": "How do Aztec account types differ?", "should_trigger": true},
+  {"query": "Generate secret key and signing key for an Aztec wallet", "should_trigger": true},
+  {"query": "Load my Aztec account from environment variables", "should_trigger": true},
+  {"query": "Why does my Aztec account deployment use AztecAddress.ZERO?", "should_trigger": true},
+  {"query": "Create an Ethereum wallet with MetaMask", "should_trigger": false},
+  {"query": "Write an Aztec smart contract", "should_trigger": false},
+  {"query": "Deploy my contract to devnet", "should_trigger": false},
+  {"query": "How do notes work in Aztec?", "should_trigger": false},
+  {"query": "Write an E2E test", "should_trigger": false},
+  {"query": "Set up a TypeScript client for my Aztec contract", "should_trigger": false},
+  {"query": "Help me manage my PostgreSQL users", "should_trigger": false},
+  {"query": "Review this contract for security issues", "should_trigger": false}
+]

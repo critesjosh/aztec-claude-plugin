@@ -12,7 +12,7 @@ Start with the execution model, then dive into specific patterns:
 * [AuthWit](./authwit.md) - Authorizing another address to act on your behalf, end-to-end runtime flow
 
 ### Private State
-* [Notes](./notes.md) - Note lifecycle, ownership, built-in types (UintNote, ValueNote), insert/get/remove
+* [Notes](./notes.md) - Note lifecycle, ownership, built-in types (UintNote, FieldNote), insert/get/remove
 * [Partial Notes](./partial-notes.md) - Public→private transfers, runtime behavior, PXE reconstruction
 
 ### Contract Structure & Storage

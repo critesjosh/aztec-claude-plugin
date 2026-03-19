@@ -1,0 +1,18 @@
+[
+  {"query": "Create a TypeScript client for a deployed Aztec contract", "should_trigger": true},
+  {"query": "How do I connect to an Aztec node from TypeScript?", "should_trigger": true},
+  {"query": "How does PXE note discovery work?", "should_trigger": true},
+  {"query": "Implement authwit authorization in TypeScript", "should_trigger": true},
+  {"query": "What's the correct pattern for simulate then send?", "should_trigger": true},
+  {"query": "Register a contract with my wallet's PXE", "should_trigger": true},
+  {"query": "Set up EmbeddedWallet for my Aztec app", "should_trigger": true},
+  {"query": "Use the generated TypeScript artifacts from aztec codegen", "should_trigger": true},
+  {"query": "Write a React component", "should_trigger": false},
+  {"query": "Write a TXE unit test", "should_trigger": false},
+  {"query": "Deploy my Aztec contract", "should_trigger": false},
+  {"query": "How do notes work in Aztec?", "should_trigger": false},
+  {"query": "Create a Schnorr account", "should_trigger": false},
+  {"query": "Set up Express.js API routes", "should_trigger": false},
+  {"query": "Write an E2E test for my Aztec contract", "should_trigger": false},
+  {"query": "Review my contract for security", "should_trigger": false}
+]

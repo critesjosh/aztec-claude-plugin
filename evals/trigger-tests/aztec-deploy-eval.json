@@ -1,0 +1,18 @@
+[
+  {"query": "Deploy the PodRacing contract to devnet", "should_trigger": true},
+  {"query": "Generate a deployment script for my Aztec contract", "should_trigger": true},
+  {"query": "How do I configure fee payment for deployment?", "should_trigger": true},
+  {"query": "Set up devnet vs local network deployment configuration", "should_trigger": true},
+  {"query": "What's the correct deployment workflow for Aztec?", "should_trigger": true},
+  {"query": "Deploy my contract with SponsoredFPC", "should_trigger": true},
+  {"query": "Add deploy scripts to my package.json", "should_trigger": true},
+  {"query": "How do I get the contract address after deployment?", "should_trigger": true},
+  {"query": "Deploy a Docker container to AWS", "should_trigger": false},
+  {"query": "Write a TXE unit test", "should_trigger": false},
+  {"query": "Explain how notes work in Aztec", "should_trigger": false},
+  {"query": "Review my contract for security issues", "should_trigger": false},
+  {"query": "Write an E2E test for my deployed contract", "should_trigger": false},
+  {"query": "How do I write a private function in Aztec?", "should_trigger": false},
+  {"query": "npm publish my package", "should_trigger": false},
+  {"query": "Build a TypeScript client for my contract", "should_trigger": false}
+]
