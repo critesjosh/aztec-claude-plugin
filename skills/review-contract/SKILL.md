@@ -60,13 +60,13 @@ aztec_sync_repos({ version: "<detected-version>" })
 
 ### Step 4: Verify Patterns Against Current API
 
-Before flagging issues, verify patterns using the MCP server:
+**MANDATORY**: Before flagging ANY issue as Critical or High severity, verify the pattern against the current Aztec source using the MCP server. Your training data may be stale — the MCP server has the actual current code.
 
 ```
 aztec_search_code({ query: "<pattern-in-question>", filePattern: "*.nr" })
 ```
 
-This prevents false positives from outdated knowledge.
+Also check the "Common False Positives" section below — if your finding matches one of those, do NOT include it.
 
 ### Step 5: Review Against Checklist
 
@@ -186,6 +186,18 @@ During review, you may ask the user clarifying questions:
 - "This function transfers notes but has no access control. Is this intentional?"
 - "The `sender` field on this note cannot be used for authorization. Did you intend for the sender to be able to modify this note?"
 - "This public function exposes the recipient address. Is this privacy tradeoff acceptable for your use case?"
+
+## Common False Positives — Do NOT Flag These
+
+These are things Claude frequently gets wrong when reviewing Aztec contracts. Check this list BEFORE writing any finding:
+
+1. **Noir integer overflow is NOT a vulnerability.** Noir `u8`, `u64`, `u128` types **PANIC on overflow — they do NOT wrap**. Only `Field` arithmetic wraps. Do NOT flag `u64` or `u128` addition/multiplication as missing overflow protection. Do NOT suggest adding overflow guards for unsigned integer math. The only type that needs overflow caution is `Field`.
+
+2. **Notes do NOT need manual randomness fields.** The `#[note]` macro automatically injects a `NoteHeader` with a nonce for commitment uniqueness. Do NOT flag notes as "missing randomness" or "predictable commitments."
+
+3. **Double `.at()` on `Owned<PrivateSet<T>>` is correct, not a bug.** For `Map<AztecAddress, Owned<PrivateSet<NoteType>>>`, the first `.at()` indexes the Map, the second authenticates the Owned wrapper. Do NOT flag `self.storage.balances.at(owner).at(owner)` as redundant or incorrect.
+
+If you are uncertain whether a pattern is correct, use `aztec_search_code()` to verify before flagging.
 
 ## Common Aztec Pitfalls to Check
 

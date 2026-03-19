@@ -28,32 +28,31 @@
       "prompt": "Write an Aztec contract that stores private voting records. Each user should be able to cast one vote privately, and the contract should tally results publicly.",
       "target_skill": "aztec-developer",
       "grader_assertions": [
-        "Uses #[note] macro for vote note with owner field",
-        "Uses Owned or PrivateSet for private vote storage",
+        "Uses a private state mechanism for votes (notes via #[note] macro, SingleUseClaim, or Owned/PrivateSet)",
         "Uses PublicMutable for vote tallies",
-        "Private vote function creates note + enqueues public tally update",
-        "Has a mechanism to prevent double-voting (nullifier-based)",
+        "Private vote function enqueues a public tally update",
+        "Has a nullifier-based mechanism to prevent double-voting (via note nullifiers, SingleUseClaim, or explicit nullifier emission)",
         "Constructor uses #[initializer] attribute",
         "Correct function visibility attributes (#[external(\"private\")], #[external(\"public\")])",
-        "Uses self.msg_sender() for voter identity"
+        "Uses self.msg_sender() for voter identity (not maybe_msg_sender().unwrap())",
+        "Private-to-public call uses enqueue_self with #[only_self] or similar access control on the public tally function"
       ],
-      "key_signal": "Note ownership, Owned wrapper, private-to-public enqueue pattern"
+      "key_signal": "Nullifier-based double-vote prevention, private-to-public enqueue pattern, access control on tally"
     },
     {
       "id": "CMP-02",
       "prompt": "Write a TypeScript deployment script that deploys the PodRacing contract to devnet. Use the aztec-starter project structure and utilities.",
       "target_skill": "aztec-deploy",
       "grader_assertions": [
-        "Sets AZTEC_ENV=devnet or uses devnet config",
         "Calls .simulate() before .send() for all transactions",
-        "Uses SponsoredFeePaymentMethod via getSponsoredFPCInstance()",
-        "Import path for AztecAddress is @aztec/aztec.js/addresses (matching aztec-starter)",
-        "Uses getTimeouts() from config for timeout values",
-        "Imports PodRacing from src/artifacts/PodRacing.js",
+        "Uses SponsoredFeePaymentMethod for fee payment",
+        "Imports contract artifact from local src/artifacts/ path",
         "Deploys account before deploying contract",
-        "Uses createLogger from @aztec/foundation/log"
+        "Uses AztecAddress.ZERO as from address for account deployment",
+        "Includes explicit timeout values in .send() wait options",
+        "Post-deployment verification (reads back state to confirm success)"
       ],
-      "key_signal": "Correct imports, config patterns, simulate-before-send, devnet timeouts"
+      "key_signal": "simulate-before-send, SponsoredFPC, correct deploy ordering, AztecAddress.ZERO"
     },
     {
       "id": "CMP-03",
@@ -64,12 +63,12 @@
         "Registers senders with wallet.registerSender()",
         "Calls .simulate() before every .send()",
         "Uses SponsoredFeePaymentMethod",
-        "Covers full lifecycle: create_game → join_game → play_round x3 → finish_game → finalize_game",
-        "Uses getTimeouts() for timeout values",
+        "Covers full contract lifecycle (multiple operations including state changes and reads)",
         "Has appropriate Jest timeout (600000+ for beforeAll)",
-        "Checks TxStatus for transaction success"
+        "Checks TxStatus for transaction success",
+        "Uses .simulate() (not .send()) to test expected failures/reverts"
       ],
-      "key_signal": "Account setup ordering, registerSender, full game lifecycle, timeouts"
+      "key_signal": "Account setup ordering, registerSender, simulate-before-send, revert testing"
     },
     {
       "id": "CMP-04",
@@ -103,19 +102,19 @@
     },
     {
       "id": "CMP-06",
-      "prompt": "Review the PodRacing contract (src/main.nr) in the aztec-starter repo for security issues, correctness, and best practices.",
+      "prompt": "Review the Token contract (src/main.nr) in the scaffold for security issues, correctness, and best practices.",
       "target_skill": "review-contract",
       "grader_assertions": [
         "Produces structured output with severity levels (Critical/High/Medium/Low)",
-        "Identifies the tie-breaking bias in finalize_game (player 1 advantage)",
-        "Checks note ownership patterns on GameRoundNote",
-        "Reviews access control on public functions (create_game, join_game, finalize_game)",
+        "Does NOT falsely claim Noir u64/u128 arithmetic wraps on overflow (Noir integers PANIC, they do NOT wrap)",
+        "Does NOT falsely claim notes are missing randomness (the #[note] macro injects NoteHeader automatically)",
+        "Checks note ownership patterns (who can nullify notes)",
+        "Reviews access control on public functions",
         "Checks function visibility attributes",
-        "Notes the private-to-public pattern in play_round → validate_and_play_round",
-        "Includes 'What's Done Well' section",
-        "Mentions using MCP server to verify patterns against current API"
+        "Notes the private-to-public pattern in the shield function",
+        "Includes 'What's Done Well' section or equivalent positive findings"
       ],
-      "key_signal": "Structured severity output, tie-breaking bias, note ownership review"
+      "key_signal": "No false positives about Noir overflow or note randomness, structured severity output, note ownership review"
     },
     {
       "id": "CMP-07",

@@ -70,10 +70,33 @@
         "Updated CLAUDE.md and README.md to remove stale references"
       ]
     }
+    {
+      "iteration": 5,
+      "date": "2026-03-19",
+      "type": "comparator",
+      "description": "Full 10-test A/B eval with consolidated 2-skill plugin against scaffold, assertion-graded",
+      "skills_count": 2,
+      "tests_run": ["CMP-01", "CMP-02", "CMP-03", "CMP-04", "CMP-05", "CMP-06", "CMP-07", "CMP-08", "CMP-09", "CMP-10"],
+      "key_findings": {
+        "mean_pass_rate_with_skill": "88.6%",
+        "mean_pass_rate_without_skill": "71.3%",
+        "mean_delta": "+17.3%",
+        "best_test": "CMP-07 (TXE testing): +62.5% — without-skill used deprecated v3 env.impersonate() API",
+        "high_delta_tests": ["CMP-01 (+37.5%)", "CMP-07 (+62.5%)", "CMP-08 (+33.3%)", "CMP-06 (+25%)"],
+        "zero_delta_tests": ["CMP-02", "CMP-03", "CMP-04", "CMP-09", "CMP-10"],
+        "issue_found": "CMP-06 with-skill still claimed Noir overflow wraps despite skill saying it panics — review-contract missing this fact"
+      },
+      "changes_applied": [
+        "Added 'Common False Positives' section to review-contract skill (Noir overflow, note randomness, double .at())",
+        "Strengthened MCP verification step in review-contract to be MANDATORY for Critical/High findings",
+        "Updated evals.json: CMP-01 accepts SingleUseClaim alternative, CMP-02/03 removed getTimeouts() (non-discriminating), CMP-06 adapted to scaffold Token contract and added overflow/randomness false positive checks"
+      ]
+    }
   ],
   "next_steps": [
-    "Re-run iteration-3 scaffold tests with consolidated 2-skill plugin to measure improvement",
+    "Re-run CMP-06 and CMP-01 with updated skills and assertions to verify improvements",
     "Add more framework gotchas to aztec-developer as new hallucinations are discovered",
-    "Consider adding E2E task verification (compile + run) as automated eval step"
+    "Consider adding E2E task verification (compile + run) as automated eval step",
+    "Investigate why with-skill runs use 1.8x more tokens — consider trimming verbose skill references"
   ]
 }
