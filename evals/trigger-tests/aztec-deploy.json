@@ -1,0 +1,118 @@
+{
+  "skill": "aztec-deploy",
+  "description": "Generate TypeScript deployment scripts for Aztec contracts with fee payment configuration",
+  "test_cases": [
+    {
+      "id": "DEP-T01",
+      "prompt": "Deploy the PodRacing contract to devnet",
+      "should_trigger": true,
+      "rationale": "Direct deployment request with target environment"
+    },
+    {
+      "id": "DEP-T02",
+      "prompt": "Generate a deployment script for my Aztec contract",
+      "should_trigger": true,
+      "rationale": "Script generation — core deploy skill"
+    },
+    {
+      "id": "DEP-T03",
+      "prompt": "How do I configure fee payment for deployment?",
+      "should_trigger": true,
+      "rationale": "Fee payment config — covered by fee-payment.md"
+    },
+    {
+      "id": "DEP-T04",
+      "prompt": "Set up devnet vs local network deployment configuration",
+      "should_trigger": true,
+      "rationale": "Environment config — covered by environment-config.md"
+    },
+    {
+      "id": "DEP-T05",
+      "prompt": "What's the correct deployment workflow for Aztec?",
+      "should_trigger": true,
+      "rationale": "Deployment workflow overview"
+    },
+    {
+      "id": "DEP-T06",
+      "prompt": "Deploy my contract with SponsoredFPC",
+      "should_trigger": true,
+      "rationale": "Sponsored fee payment deployment"
+    },
+    {
+      "id": "DEP-T07",
+      "prompt": "Add deploy scripts to my package.json",
+      "should_trigger": true,
+      "rationale": "Deploy script configuration"
+    },
+    {
+      "id": "DEP-T08",
+      "prompt": "How do I get the contract address after deployment?",
+      "should_trigger": true,
+      "rationale": "Post-deployment verification"
+    },
+    {
+      "id": "DEP-N01",
+      "prompt": "Deploy a Docker container to AWS",
+      "should_trigger": false,
+      "rationale": "Cloud deployment — not Aztec"
+    },
+    {
+      "id": "DEP-N02",
+      "prompt": "Write a TXE unit test",
+      "should_trigger": false,
+      "rationale": "Testing — should trigger aztec-developer"
+    },
+    {
+      "id": "DEP-N03",
+      "prompt": "Explain how notes work in Aztec",
+      "should_trigger": false,
+      "rationale": "Core concept — should trigger aztec-developer"
+    },
+    {
+      "id": "DEP-N04",
+      "prompt": "Review my contract for security issues",
+      "should_trigger": false,
+      "rationale": "Review — should trigger review-contract"
+    },
+    {
+      "id": "DEP-N05",
+      "prompt": "Write an E2E test for my deployed contract",
+      "should_trigger": false,
+      "rationale": "E2E testing — should trigger aztec-e2e-testing"
+    },
+    {
+      "id": "DEP-N06",
+      "prompt": "How do I write a private function in Aztec?",
+      "should_trigger": false,
+      "rationale": "Contract development — should trigger aztec-developer"
+    },
+    {
+      "id": "DEP-N07",
+      "prompt": "npm publish my package",
+      "should_trigger": false,
+      "rationale": "NPM publishing — unrelated"
+    },
+    {
+      "id": "DEP-N08",
+      "prompt": "Build a TypeScript client for my contract",
+      "should_trigger": false,
+      "rationale": "TS client — should trigger aztec-typescript"
+    }
+  ],
+  "conflict_prompts": [
+    {
+      "id": "DEP-C01",
+      "prompt": "Deploy my contract and write an E2E test",
+      "expected_skills": ["aztec-deploy", "aztec-e2e-testing"],
+      "conflict_with": [],
+      "rationale": "Multi-skill task — both should trigger for their respective parts"
+    },
+    {
+      "id": "DEP-C02",
+      "prompt": "Create an account and deploy my contract",
+      "expected_skills": ["aztec-deploy"],
+      "conflict_with": ["aztec-accounts"],
+      "rationale": "Deploy skill includes account deployment as part of the deploy workflow"
+    }
+  ]
+}

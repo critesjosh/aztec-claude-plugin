@@ -58,14 +58,14 @@ env.call_public(caller, Token::at(token_address).mint_to_public(recipient, 100))
 let balance = env.view_public(Token::at(token_address).balance_of_public(owner));
 ```
 
-**View private** - read-only private state (for view functions):
+**View private** - read-only private state (for view functions, requires `from` for scope):
 
 ```rust
-let data = env.view_private(Token::at(token_address).get_private_data(owner));
+let data = env.view_private(owner, Token::at(token_address).get_private_data(owner));
 ```
 
-**Simulate utility** - for unconstrained utility functions:
+**Execute utility** - for unconstrained utility functions:
 
 ```rust
-let total = env.simulate_utility(Token::at(token_address).balance_of_private(owner));
+let total = env.execute_utility(Token::at(token_address).balance_of_private(owner));
 ```

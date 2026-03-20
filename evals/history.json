@@ -1,0 +1,102 @@
+{
+  "plugin": "aztec-claude-plugin",
+  "iterations": [
+    {
+      "iteration": 0,
+      "date": "2026-03-19",
+      "type": "baseline",
+      "description": "Framework setup, structural audit, overlap analysis, trigger/comparator/E2E test definitions",
+      "skills_count": 8,
+      "key_findings": {
+        "structural_audit_mean": "53%",
+        "recommended_merges": ["aztec-contract-dev → aztec-developer", "aztec-testing → aztec-developer"]
+      }
+    },
+    {
+      "iteration": 1,
+      "date": "2026-03-19",
+      "type": "comparator",
+      "description": "A/B tests against aztec-starter (next branch), tools DISABLED, v4.0.0",
+      "skills_count": 8,
+      "tests_run": ["CMP-02", "CMP-03", "CMP-06", "CMP-09"],
+      "key_findings": {
+        "mean_content_delta": "+2.25",
+        "assertion_pass_rate_delta": "+60.7%",
+        "note": "Large delta because Claude uses stale v3 APIs without skills"
+      }
+    },
+    {
+      "iteration": 2,
+      "date": "2026-03-19",
+      "type": "comparator",
+      "description": "A/B tests against aztec-starter (testnet branch), tools ENABLED, v4.1.0-rc.2",
+      "skills_count": 8,
+      "tests_run": ["CMP-02", "CMP-03", "CMP-06", "CMP-09"],
+      "key_findings": {
+        "mean_content_delta": "+0.25",
+        "note": "Near-zero delta — Claude copies patterns from existing code (CLAUDE.md, index.test.ts, etc.)"
+      }
+    },
+    {
+      "iteration": 3,
+      "date": "2026-03-19",
+      "type": "comparator",
+      "description": "A/B tests against evals/scaffold (Token contract, no CLAUDE.md/tests/scripts), tools ENABLED, v4.1.0-rc.2",
+      "skills_count": 8,
+      "tests_run": ["CMP-02", "CMP-03", "CMP-06", "CMP-09"],
+      "key_findings": {
+        "mean_content_delta": "+1.0",
+        "best_test": "CMP-06 (review-contract): +2.0 — prevents 3 false positives about Aztec internals",
+        "false_positives_without_skill": [
+          "Noir u64 wraps on overflow (FALSE — panics)",
+          "#[note] missing randomness (FALSE — macro injects NoteHeader)",
+          "double .at() is a bug (FALSE — correct for Owned<PrivateSet>)"
+        ]
+      }
+    },
+    {
+      "iteration": 4,
+      "date": "2026-03-19",
+      "type": "consolidation",
+      "description": "Applied eval recommendations: removed 6 low-value skills, kept 2 (review-contract + aztec-developer)",
+      "skills_before": 8,
+      "skills_after": 2,
+      "removed": ["aztec-accounts", "aztec-contract-dev", "aztec-deploy", "aztec-e2e-testing", "aztec-testing", "aztec-typescript"],
+      "kept": ["aztec-developer", "review-contract"],
+      "changes": [
+        "Removed 6 skills with zero or marginal eval delta",
+        "Rewrote aztec-developer SKILL.md with 'Common Hallucinations to Avoid' section",
+        "Content reduced from 47 files / 7147 lines to 27 files / 2841 lines (60% reduction)",
+        "Updated CLAUDE.md and README.md to remove stale references"
+      ]
+    }
+    {
+      "iteration": 5,
+      "date": "2026-03-19",
+      "type": "comparator",
+      "description": "Full 10-test A/B eval with consolidated 2-skill plugin against scaffold, assertion-graded",
+      "skills_count": 2,
+      "tests_run": ["CMP-01", "CMP-02", "CMP-03", "CMP-04", "CMP-05", "CMP-06", "CMP-07", "CMP-08", "CMP-09", "CMP-10"],
+      "key_findings": {
+        "mean_pass_rate_with_skill": "88.6%",
+        "mean_pass_rate_without_skill": "71.3%",
+        "mean_delta": "+17.3%",
+        "best_test": "CMP-07 (TXE testing): +62.5% — without-skill used deprecated v3 env.impersonate() API",
+        "high_delta_tests": ["CMP-01 (+37.5%)", "CMP-07 (+62.5%)", "CMP-08 (+33.3%)", "CMP-06 (+25%)"],
+        "zero_delta_tests": ["CMP-02", "CMP-03", "CMP-04", "CMP-09", "CMP-10"],
+        "issue_found": "CMP-06 with-skill still claimed Noir overflow wraps despite skill saying it panics — review-contract missing this fact"
+      },
+      "changes_applied": [
+        "Added 'Common False Positives' section to review-contract skill (Noir overflow, note randomness, double .at())",
+        "Strengthened MCP verification step in review-contract to be MANDATORY for Critical/High findings",
+        "Updated evals.json: CMP-01 accepts SingleUseClaim alternative, CMP-02/03 removed getTimeouts() (non-discriminating), CMP-06 adapted to scaffold Token contract and added overflow/randomness false positive checks"
+      ]
+    }
+  ],
+  "next_steps": [
+    "Re-run CMP-06 and CMP-01 with updated skills and assertions to verify improvements",
+    "Add more framework gotchas to aztec-developer as new hallucinations are discovered",
+    "Consider adding E2E task verification (compile + run) as automated eval step",
+    "Investigate why with-skill runs use 1.8x more tokens — consider trimming verbose skill references"
+  ]
+}

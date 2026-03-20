@@ -8,6 +8,10 @@ This project uses the Aztec Network for privacy-preserving smart contract develo
 - **Aztec.nr**: Noir framework for Aztec contract development
 - **PXE (Private Execution Environment)**: Client-side execution for private functions
 
+## Code Philosophy
+
+You are writing application code, not library code. Application code should fail fast and loud. Do not add resilience patterns (retries, fallbacks, default values) unless explicitly requested. The developer's debugging experience is more important than the app "not crashing" — a crash with a clear error message is always better than silent misbehavior.
+
 ## ⚠️ Critical: Aztec ≠ Solidity
 
 ### Private State = Notes
@@ -86,7 +90,8 @@ pub contract MyContract {
 | `#[internal("private")]` | Only callable by the contract itself (private context) |
 | `#[internal("public")]` | Only callable by the contract itself (public context) |
 | `#[initializer]` | Constructor function |
-| `#[authorize_once]` | Requires authwit authorization, consumed after one use |
+| `#[only_self]` | Restricts function to self-calls only (asserts msg_sender == self.address) |
+| `#[authorize_once("from", "nonce")]` | Requires authwit authorization, consumed after one use |
 | `#[allow_phase_change]` | Allows private-to-public phase transition (used in FPC) |
 | `#[contract_library_method]` | Helper function, no ABI entry generated |
 
@@ -96,8 +101,7 @@ For comprehensive patterns, see the skills:
 
 - **[Contract Development](./skills/aztec-developer/contract-dev/index.md)** - Storage, notes, cross-contract calls
 - **[Unit Testing](./skills/aztec-developer/txe/index.md)** - TXE test environment
-- **[TypeScript Integration](./skills/aztec-typescript/SKILL.md)** - Frontend patterns
-- **[Deployment](./skills/aztec-deploy/SKILL.md)** - Deploy scripts and fee payment
+- **[Contract Review](./skills/review-contract/SKILL.md)** - Security review checklist
 
 ## ⚠️ Critical: Note Ownership
 
@@ -129,7 +133,7 @@ name = "my_contract"
 type = "contract"
 
 [dependencies]
-aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.0.0-devnet.2-patch.1", directory = "aztec" }
+aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.1.0-rc.2", directory = "aztec" }
 ```
 
 ## Version Detection
@@ -139,10 +143,10 @@ aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.0.0-devn
 Extract the version from `Nargo.toml`:
 
 ```toml
-aztec = { git = "...", tag = "v4.0.0-devnet.2-patch.1", ... }
+aztec = { git = "...", tag = "v4.1.0-rc.2", ... }
 ```
 
-If version differs from `v4.0.0-devnet.2-patch.1`:
+If version differs from `v4.1.0-rc.2`:
 - Warn the user that patterns may not match their version
 - Prioritize Aztec MCP server over examples in this file
 
@@ -176,12 +180,12 @@ User asks Aztec question
 
 ```bash
 /aztec-version                    # Autodetect from Nargo.toml
-/aztec-version v4.0.0-devnet.2-patch.1    # Use specific version
+/aztec-version v4.1.0-rc.2    # Use specific version
 ```
 
 Or pass version to sync:
 ```
-aztec_sync_repos({ version: "v4.0.0-devnet.2-patch.1", force: true })
+aztec_sync_repos({ version: "v4.1.0-rc.2", force: true })
 ```
 
 ## ⚠️ Critical: Simulate Before Send

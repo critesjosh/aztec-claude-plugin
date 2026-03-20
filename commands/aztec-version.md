@@ -21,7 +21,7 @@ Switch the Aztec version used by the local MCP server repositories.
 
 2. Read the Nargo.toml and extract the aztec dependency tag:
 ```toml
-aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.0.0-devnet.2-patch.1", directory = "aztec" }
+aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.1.0-rc.2", directory = "aztec" }
 ```
 
 3. If no Nargo.toml found or no aztec dependency, ask the user to specify a version explicitly.
@@ -30,12 +30,22 @@ aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.0.0-devn
 
 Before syncing, show the detected/provided version and ask for confirmation.
 
+### Step 2.5: Check Cache
+
+Check if the detected version is already synced:
+
+1. Read `${CLAUDE_PLUGIN_DATA}/last_synced_version.txt` if it exists
+2. If the file contains the same version tag, skip Step 3 and report "Already synced to version X"
+3. If different or file doesn't exist, proceed to Step 3
+
 ### Step 3: Sync Repositories
 
 Call `aztec_sync_repos` with the version:
 ```
 aztec_sync_repos({ version: "<detected-or-provided-version>", force: true })
 ```
+
+After successful sync, write the version to `${CLAUDE_PLUGIN_DATA}/last_synced_version.txt` for future cache checks.
 
 ### Step 4: Verify and Report
 

@@ -1,0 +1,111 @@
+{
+  "skill": "review-contract",
+  "description": "Review Aztec smart contracts for correctness, security, and best practices",
+  "test_cases": [
+    {
+      "id": "REV-T01",
+      "prompt": "Review this contract for security issues",
+      "should_trigger": true,
+      "rationale": "Direct review request"
+    },
+    {
+      "id": "REV-T02",
+      "prompt": "/review-contract src/main.nr",
+      "should_trigger": true,
+      "rationale": "Slash command invocation"
+    },
+    {
+      "id": "REV-T03",
+      "prompt": "Check my Aztec contract for common pitfalls",
+      "should_trigger": true,
+      "rationale": "Pitfall checking — core skill"
+    },
+    {
+      "id": "REV-T04",
+      "prompt": "Is my note ownership pattern correct?",
+      "should_trigger": true,
+      "rationale": "Note ownership review — key checklist item"
+    },
+    {
+      "id": "REV-T05",
+      "prompt": "Audit the access control in my Aztec contract",
+      "should_trigger": true,
+      "rationale": "Access control audit"
+    },
+    {
+      "id": "REV-T06",
+      "prompt": "Are there any privacy leaks in my contract?",
+      "should_trigger": true,
+      "rationale": "Privacy review — critical severity items"
+    },
+    {
+      "id": "REV-T07",
+      "prompt": "Review my contract's function visibility",
+      "should_trigger": true,
+      "rationale": "Visibility review — checklist item"
+    },
+    {
+      "id": "REV-T08",
+      "prompt": "Can you check if I'm using msg_sender correctly?",
+      "should_trigger": true,
+      "rationale": "msg_sender correctness review"
+    },
+    {
+      "id": "REV-N01",
+      "prompt": "Write a new Aztec contract",
+      "should_trigger": false,
+      "rationale": "Creation — should trigger aztec-developer"
+    },
+    {
+      "id": "REV-N02",
+      "prompt": "Deploy my contract",
+      "should_trigger": false,
+      "rationale": "Deployment — should trigger aztec-deploy"
+    },
+    {
+      "id": "REV-N03",
+      "prompt": "Write tests for my contract",
+      "should_trigger": false,
+      "rationale": "Testing — should trigger aztec-developer or aztec-e2e-testing"
+    },
+    {
+      "id": "REV-N04",
+      "prompt": "Review my Python code for bugs",
+      "should_trigger": false,
+      "rationale": "Python review — not Aztec"
+    },
+    {
+      "id": "REV-N05",
+      "prompt": "Explain how notes work in Aztec",
+      "should_trigger": false,
+      "rationale": "Explanation — should trigger aztec-developer"
+    },
+    {
+      "id": "REV-N06",
+      "prompt": "Create an account on Aztec",
+      "should_trigger": false,
+      "rationale": "Account management — should trigger aztec-accounts"
+    },
+    {
+      "id": "REV-N07",
+      "prompt": "Set up TypeScript client for my contract",
+      "should_trigger": false,
+      "rationale": "TS client — should trigger aztec-typescript"
+    },
+    {
+      "id": "REV-N08",
+      "prompt": "Help me configure ESLint",
+      "should_trigger": false,
+      "rationale": "Linting — unrelated"
+    }
+  ],
+  "conflict_prompts": [
+    {
+      "id": "REV-C01",
+      "prompt": "I just wrote this contract, can you review it and suggest improvements?",
+      "expected_skills": ["review-contract"],
+      "conflict_with": ["aztec-developer", "aztec-contract-dev"],
+      "rationale": "'Review' and 'suggest improvements' clearly signals review-contract, not developer."
+    }
+  ]
+}

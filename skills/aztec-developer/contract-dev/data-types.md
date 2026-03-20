@@ -126,7 +126,7 @@ fn get_name() -> FieldCompressedString {
 **Nargo.toml dependency:**
 
 ```toml
-compressed_string = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.0.0-devnet.2-patch.1", directory = "compressed-string" }
+compressed_string = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.1.0-rc.2", directory = "compressed-string" }
 ```
 
 ## Custom Structs
@@ -249,7 +249,7 @@ impl NoteHash for UintNote {
 **UintNote** is the standard note type for numeric values:
 
 ```rust
-use uint_note::uint_note::UintNote;
+use uint_note::UintNote;
 
 // UintNote stores a u128 value
 pub struct UintNote {

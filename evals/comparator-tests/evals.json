@@ -1,0 +1,180 @@
+{
+  "metadata": {
+    "plugin": "aztec-claude-plugin",
+    "date": "2026-03-19",
+    "test_bed": "evals/scaffold/ (primary) or aztec-starter (historical)",
+    "methodology": "Blind A/B comparison: each prompt run with skill loaded vs vanilla Claude from the scaffold directory. Scored 1-5 on Content and Structure. Run with --disallowed-tools Edit,Write,NotebookEdit to prevent file mutations.",
+    "skills_consolidated": "8 → 2 skills (aztec-developer + review-contract). CMP target_skill fields below reference original skill names for historical context."
+  },
+  "scoring_rubric": {
+    "content": {
+      "1": "Fundamentally incorrect or missing. Would not compile/run. Key Aztec concepts wrong.",
+      "2": "Partially correct but with significant errors. Some valid patterns mixed with wrong ones.",
+      "3": "Mostly correct. Core approach right, minor issues (stale API, missing edge cases).",
+      "4": "Correct and complete. Valid v4 code, covers main cases, follows best practices.",
+      "5": "Excellent. Production-ready code, handles edge cases, includes non-obvious Aztec-specific patterns."
+    },
+    "structure": {
+      "1": "Unorganized wall of text. No clear steps or structure.",
+      "2": "Some organization but hard to follow. Missing context or unclear ordering.",
+      "3": "Decent structure with clear sections. Usable but not copy-paste ready.",
+      "4": "Well-organized with clear flow. Code is directly usable with minor adaptation.",
+      "5": "Excellent structure. Copy-paste ready with inline explanations. Follows progressive disclosure."
+    }
+  },
+  "test_cases": [
+    {
+      "id": "CMP-01",
+      "prompt": "Write an Aztec contract that stores private voting records. Each user should be able to cast one vote privately, and the contract should tally results publicly.",
+      "target_skill": "aztec-developer",
+      "grader_assertions": [
+        "Uses a private state mechanism for votes (notes via #[note] macro, SingleUseClaim, or Owned/PrivateSet)",
+        "Uses PublicMutable for vote tallies",
+        "Private vote function enqueues a public tally update",
+        "Has a nullifier-based mechanism to prevent double-voting (via note nullifiers, SingleUseClaim, or explicit nullifier emission)",
+        "Constructor uses #[initializer] attribute",
+        "Correct function visibility attributes (#[external(\"private\")], #[external(\"public\")])",
+        "Uses self.msg_sender() for voter identity (not maybe_msg_sender().unwrap())",
+        "Private-to-public call uses enqueue_self with #[only_self] or similar access control on the public tally function"
+      ],
+      "key_signal": "Nullifier-based double-vote prevention, private-to-public enqueue pattern, access control on tally"
+    },
+    {
+      "id": "CMP-02",
+      "prompt": "Write a TypeScript deployment script that deploys the PodRacing contract to devnet. Use the aztec-starter project structure and utilities.",
+      "target_skill": "aztec-deploy",
+      "grader_assertions": [
+        "Calls .simulate() before .send() for all transactions",
+        "Uses SponsoredFeePaymentMethod for fee payment",
+        "Imports contract artifact from local src/artifacts/ path",
+        "Deploys account before deploying contract",
+        "Uses AztecAddress.ZERO as from address for account deployment",
+        "Includes explicit timeout values in .send() wait options",
+        "Post-deployment verification (reads back state to confirm success)"
+      ],
+      "key_signal": "simulate-before-send, SponsoredFPC, correct deploy ordering, AztecAddress.ZERO"
+    },
+    {
+      "id": "CMP-03",
+      "prompt": "Write a complete E2E test for a two-player PodRacing game lifecycle. Include account setup, game creation, both players joining, playing 3 rounds, and finalizing. Use the aztec-starter project structure.",
+      "target_skill": "aztec-e2e-testing",
+      "grader_assertions": [
+        "Sets up 2 separate accounts with unique keys",
+        "Registers senders with wallet.registerSender()",
+        "Calls .simulate() before every .send()",
+        "Uses SponsoredFeePaymentMethod",
+        "Covers full contract lifecycle (multiple operations including state changes and reads)",
+        "Has appropriate Jest timeout (600000+ for beforeAll)",
+        "Checks TxStatus for transaction success",
+        "Uses .simulate() (not .send()) to test expected failures/reverts"
+      ],
+      "key_signal": "Account setup ordering, registerSender, simulate-before-send, revert testing"
+    },
+    {
+      "id": "CMP-04",
+      "prompt": "How does msg_sender work in Aztec? When is it None? How does it propagate through call chains? What are the privacy implications?",
+      "target_skill": "aztec-contract-dev",
+      "grader_assertions": [
+        "Explains self.msg_sender() vs self.context.maybe_msg_sender()",
+        "States msg_sender is None at transaction entrypoints (account contracts)",
+        "States msg_sender is None for incognito enqueued public calls",
+        "Shows propagation chain: User → Account Contract → App Contract",
+        "Mentions enqueue_incognito() for privacy-preserving public calls",
+        "Warns that msg_sender in enqueued public calls is visible on-chain",
+        "Distinguishes private-to-private (composed in one proof) from private-to-public (enqueued)"
+      ],
+      "key_signal": "maybe_msg_sender, incognito calls, on-chain visibility, propagation chain"
+    },
+    {
+      "id": "CMP-05",
+      "prompt": "Create a complete TypeScript client that connects to an Aztec node, sets up a wallet, deploys a contract, and calls a method on it. Include proper error handling and fee payment.",
+      "target_skill": "aztec-typescript",
+      "grader_assertions": [
+        "Uses createAztecNodeClient for node connection",
+        "Uses EmbeddedWallet.create() for wallet setup",
+        "Calls .simulate() before .send()",
+        "Uses SponsoredFeePaymentMethod",
+        "Uses correct import paths matching aztec-starter",
+        "Includes .send({ wait: { timeout } }) pattern (not .send().wait())",
+        "Uses getTimeouts() or explicit timeout values"
+      ],
+      "key_signal": "simulate-before-send, correct imports, wait options in send"
+    },
+    {
+      "id": "CMP-06",
+      "prompt": "Review the Token contract (src/main.nr) in the scaffold for security issues, correctness, and best practices.",
+      "target_skill": "review-contract",
+      "grader_assertions": [
+        "Produces structured output with severity levels (Critical/High/Medium/Low)",
+        "Does NOT falsely claim Noir u64/u128 arithmetic wraps on overflow (Noir integers PANIC, they do NOT wrap)",
+        "Does NOT falsely claim notes are missing randomness (the #[note] macro injects NoteHeader automatically)",
+        "Checks note ownership patterns (who can nullify notes)",
+        "Reviews access control on public functions",
+        "Checks function visibility attributes",
+        "Notes the private-to-public pattern in the shield function",
+        "Includes 'What's Done Well' section or equivalent positive findings"
+      ],
+      "key_signal": "No false positives about Noir overflow or note randomness, structured severity output, note ownership review"
+    },
+    {
+      "id": "CMP-07",
+      "prompt": "Set up a TXE test environment with 3 accounts and deploy a token contract. Include helper functions for setup reuse across multiple tests.",
+      "target_skill": "aztec-testing",
+      "grader_assertions": [
+        "Uses TestEnvironment::new() for initialization",
+        "Uses env.create_light_account() or env.create_contract_account()",
+        "Creates reusable setup helper function (unconstrained)",
+        "Defines TestAccounts and TestContracts structs",
+        "Uses env.deploy(\"Token\").with_public_initializer() or similar",
+        "Tests are marked #[test] unconstrained",
+        "Does NOT use env.impersonate() (deprecated v3 API)",
+        "Uses env.call_private(account, ...) pattern (v4 API)"
+      ],
+      "key_signal": "TestEnvironment setup, account types, v4 API (not impersonate)"
+    },
+    {
+      "id": "CMP-08",
+      "prompt": "Explain partial notes in Aztec. How do they work at runtime? When should I use them? Show an example.",
+      "target_skill": "aztec-developer",
+      "grader_assertions": [
+        "Explains two-phase note construction (partial in public, completed in PXE)",
+        "Mentions PartialUintNote as the built-in type",
+        "Explains the runtime flow: private creates partial → public completes → PXE reconstructs",
+        "Use case: when the amount is only known at public execution time",
+        "Mentions that PXE reconstructs the full note from partial data + public completion",
+        "Shows code example with prepare_partial_note and complete patterns"
+      ],
+      "key_signal": "Two-phase execution, PartialUintNote, PXE reconstruction"
+    },
+    {
+      "id": "CMP-09",
+      "prompt": "Walk me through creating a Schnorr account on Aztec, deploying it, saving the credentials, and later recovering the account from those credentials.",
+      "target_skill": "aztec-accounts",
+      "grader_assertions": [
+        "Shows Fr.random() for secretKey, GrumpkinScalar.random() for signingKey, Fr.random() for salt",
+        "Uses wallet.createSchnorrAccount(secretKey, salt, signingKey)",
+        "Deploys with AztecAddress.ZERO as the from address",
+        "Calls .simulate() before .send() on deploy method",
+        "Shows saving credentials (SECRET, SIGNING_KEY, SALT) to .env",
+        "Shows recovery using the same credentials to recreate the account",
+        "Uses SponsoredFeePaymentMethod for deployment"
+      ],
+      "key_signal": "Key generation, AztecAddress.ZERO, credential saving, recovery flow"
+    },
+    {
+      "id": "CMP-10",
+      "prompt": "Explain the complete transaction lifecycle in Aztec. What happens from when a user initiates a transaction to when it's finalized? Cover private execution, kernel circuits, and public execution.",
+      "target_skill": "aztec-developer",
+      "grader_assertions": [
+        "Describes the three-phase model: Private → Kernel → Public",
+        "Explains that private execution happens client-side in the PXE",
+        "Explains kernel circuit aggregation of private function results",
+        "Explains enqueue semantics (private→public calls are not immediate)",
+        "Mentions that public execution is done by the sequencer",
+        "States that private reads of public state are from a historical snapshot",
+        "Mentions proof generation and submission to the network"
+      ],
+      "key_signal": "Three-phase model, enqueue semantics, historical public state reads"
+    }
+  ]
+}

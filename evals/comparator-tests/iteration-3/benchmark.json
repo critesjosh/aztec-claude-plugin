@@ -1,0 +1,99 @@
+{
+  "metadata": {
+    "iteration": 3,
+    "date": "2026-03-19",
+    "model": "sonnet",
+    "aztec_version": "4.1.0-rc.2",
+    "test_bed": "evals/scaffold (Token contract — no CLAUDE.md, no existing tests/scripts/utils)",
+    "plugin_dir": "/workspaces/sandbox/aztec-claude-plugin",
+    "methodology": "Each prompt run via `claude -p` from scaffold directory. Tools enabled (Read/Glob/Grep) but writes disabled (--disallowed-tools Edit,Write,NotebookEdit). With-skill uses --plugin-dir; without-skill uses vanilla Claude.",
+    "tests_executed": 4,
+    "key_difference": "Scaffold has NO CLAUDE.md, NO existing tests, NO utility code, NO scripts. Only a compiled Token contract + Aztec deps."
+  },
+  "results": {
+    "CMP-02": {
+      "prompt": "Write a TypeScript deployment script that deploys the Token contract to a local Aztec network",
+      "skill": "aztec-deploy",
+      "with_skill": {
+        "content": 5, "structure": 5,
+        "notes": "Correct v4 patterns: EmbeddedWallet.create, SponsoredFPC with SPONSORED_FPC_SALT, getContractInstanceFromInstantiationParams, AztecAddress.ZERO for account deploy, simulate-before-send. Mentions proverEnabled toggle for devnet. Uses createAztecNodeClient."
+      },
+      "without_skill": {
+        "content": 4, "structure": 4,
+        "notes": "Also correct v4 patterns. Mentions EmbeddedWallet.create with ephemeral:true, SponsoredFPC. Simulate-before-send. However, constructor args are wrong — passes (admin, name, symbol, decimals) which is not the actual contract signature (admin, initial_supply). Mentions 'per the CLAUDE.md requirement' but there is no CLAUDE.md in the scaffold."
+      },
+      "delta": { "content": "+1", "structure": "+1" },
+      "analysis": "Without skill correctly follows v4 patterns (likely from training data + reading package.json) but hallucinates a CLAUDE.md reference and gets constructor args wrong. With skill produces more complete and accurate output."
+    },
+    "CMP-03": {
+      "prompt": "Write a complete E2E integration test for the Token contract",
+      "skill": "aztec-e2e-testing",
+      "with_skill": {
+        "content": 5, "structure": 5,
+        "notes": "Created 3 files: utils/setup_wallet.ts, utils/sponsored_fpc.ts, test/token.test.ts. 6 test cases covering deploy, mint, transfer, failure modes. simulate-before-send, AztecAddress.ZERO, registerSender. Also created reusable utility modules — good project structure."
+      },
+      "without_skill": {
+        "content": 4, "structure": 5,
+        "notes": "Created token.test.ts with 11 test cases including shield tests. Also has simulate-before-send, AztecAddress.ZERO, registerSender. Very comprehensive coverage. However, no utility extraction — all inline. Both outputs are strong."
+      },
+      "delta": { "content": "+1", "structure": "0" },
+      "analysis": "Both produce excellent tests. The with-skill version adds project structure (separate utility files) and the e2e testing skill's patterns are visible. Without-skill also produces good tests by reading the contract and package.json. Delta is small but the skill adds structural discipline."
+    },
+    "CMP-06": {
+      "prompt": "Review the Token contract for security issues, correctness, and best practices",
+      "skill": "review-contract",
+      "with_skill": {
+        "content": 5, "structure": 5,
+        "notes": "8 issues (3 HIGH, 3 MEDIUM, 2 LOW). Identifies: shield privacy leak (should use enqueue_incognito), no transfer_private/unshield, msg_sender misuse, missing balance_of_private, u64 too small, no zero-address guard. 'What's Done Well' section (6 points) including correct note macro observation (#[note] auto-injects nonce). References token_blacklist_contract for comparison. Actionable code fixes."
+      },
+      "without_skill": {
+        "content": 3, "structure": 4,
+        "notes": "10 issues but includes SIGNIFICANT ERRORS: (1) Claims Noir u64 wraps on overflow — incorrect, Noir asserts on overflow. (2) Claims BalanceNote missing randomness — incorrect, #[note] macro auto-injects NoteHeader with nonce. (3) Claims double .at(caller) is a bug — incorrect, it's correct for Owned<PrivateSet> (Map key then owner). 3 false positives. No 'What's Done Well' section. No enqueue_incognito recommendation."
+      },
+      "delta": { "content": "+2", "structure": "+1" },
+      "analysis": "THIS IS THE KEY FINDING. Without the skill, Claude makes confident but WRONG claims about Aztec internals: overflow behavior, note randomness injection, and Owned<PrivateSet> indexing. The skill provides framework knowledge that prevents these false positives. The with-skill version correctly identifies the .at().at() pattern as correct and knows #[note] auto-injects randomness. Also uniquely recommends enqueue_incognito (Aztec-specific privacy pattern)."
+    },
+    "CMP-09": {
+      "prompt": "Write a TypeScript script for Schnorr account create, deploy, save, recover",
+      "skill": "aztec-accounts",
+      "with_skill": {
+        "content": 5, "structure": 5,
+        "notes": "Two-mode script (create vs recover). Fr.random + GrumpkinScalar.random, createSchnorrAccount, AztecAddress.ZERO deploy, SponsoredFeePaymentMethod, save to .env, recovery via same keys, registerSender."
+      },
+      "without_skill": {
+        "content": 5, "structure": 5,
+        "notes": "Also two-mode script. Same correct patterns: Fr.random, GrumpkinScalar.random, createSchnorrAccount, AztecAddress.ZERO, simulate-before-send, .env save, deterministic recovery. Very similar quality."
+      },
+      "delta": { "content": "0", "structure": "0" },
+      "analysis": "Wash — both produce correct output. The account lifecycle pattern appears well-represented in Sonnet's training data. Claude reads package.json to discover @aztec/wallets and infers the API."
+    }
+  },
+  "aggregate": {
+    "with_skill_mean_content": 5.0,
+    "without_skill_mean_content": 4.0,
+    "content_delta": "+1.0",
+    "with_skill_mean_structure": 5.0,
+    "without_skill_mean_structure": 4.5,
+    "structure_delta": "+0.5",
+    "key_findings": [
+      "CMP-06 (contract review) shows LARGEST delta: +2 content. Without skill, Claude makes 3 false-positive claims about Aztec internals (overflow behavior, note randomness, Owned indexing). With skill, all 3 are correctly handled.",
+      "CMP-02 and CMP-03 show moderate delta (+1 content each). Skills add accuracy in constructor args and project structure.",
+      "CMP-09 shows zero delta. Account lifecycle is well-covered in training data.",
+      "Overall scaffold delta (+1.0) is BETWEEN iteration-1 (+2.25 tools-disabled) and iteration-2 (+0.25 tools-enabled against full repo). This confirms the scaffold is the right evaluation target."
+    ],
+    "false_positives_without_skill": {
+      "CMP-06": [
+        "Claims Noir u64 wraps on overflow (FALSE — Noir asserts/panics on overflow)",
+        "Claims BalanceNote missing randomness (FALSE — #[note] macro auto-injects NoteHeader with nonce)",
+        "Claims double .at(caller) is a bug (FALSE — correct for Owned<PrivateSet<>> which is Map<key, Owned<PrivateSet>>)"
+      ]
+    },
+    "where_skills_add_value_scaffold": [
+      "Preventing false positives about Aztec framework internals",
+      "enqueue_incognito privacy recommendation (not in any code)",
+      "Structured review with 'What's Done Well' section",
+      "Project structure discipline (utility extraction)",
+      "Constructor argument accuracy"
+    ]
+  }
+}

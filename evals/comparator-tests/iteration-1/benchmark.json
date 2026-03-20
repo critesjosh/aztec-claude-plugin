@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "iteration": 1,
+    "date": "2026-03-19",
+    "model": "sonnet",
+    "test_bed": "/workspaces/sandbox/aztec-starter",
+    "plugin_dir": "/workspaces/sandbox/aztec-claude-plugin",
+    "methodology": "Each prompt run via `claude -p` with --tools '' (text-only output, no file access). With-skill uses --plugin-dir; without-skill uses vanilla Claude. Graded against predefined assertions from evals.json.",
+    "tests_executed": 4,
+    "tests_total": 10,
+    "tests_selected": "CMP-02, CMP-03, CMP-06, CMP-09 (highest expected delta)"
+  },
+  "results": {
+    "CMP-02": {
+      "prompt": "Deploy the PodRacing contract to devnet",
+      "skill": "aztec-deploy",
+      "with_skill": { "content": 4, "structure": 5, "assertions_passed": 7, "assertions_total": 8 },
+      "without_skill": { "content": 2, "structure": 3, "assertions_passed": 3, "assertions_total": 8 },
+      "delta": { "content": "+2.0", "structure": "+2.0", "pass_rate": "+50.0%" },
+      "notes": "With: correct v4 API, getSponsoredFPCInstance(), getTimeouts(), createLogger, devnet env check. Without: wrong imports, wrong FPC function, no timeouts, no account deployment."
+    },
+    "CMP-03": {
+      "prompt": "Write an E2E test for a two-player game lifecycle",
+      "skill": "aztec-e2e-testing",
+      "with_skill": { "content": 5, "structure": 5, "assertions_passed": 8, "assertions_total": 8 },
+      "without_skill": { "content": 1, "structure": 1, "assertions_passed": 0, "assertions_total": 8 },
+      "delta": { "content": "+4.0", "structure": "+4.0", "pass_rate": "+100.0%" },
+      "notes": "With: perfect score, production-ready test with helpers, timing notes, all patterns correct. Without: NO OUTPUT PRODUCED — process ran >10min with no text generated."
+    },
+    "CMP-06": {
+      "prompt": "Review PodRacing contract for security issues",
+      "skill": "review-contract",
+      "with_skill": { "content": 4, "structure": 5, "assertions_passed": 7, "assertions_total": 8 },
+      "without_skill": { "content": 2, "structure": 3, "assertions_passed": 3, "assertions_total": 8 },
+      "delta": { "content": "+2.0", "structure": "+2.0", "pass_rate": "+50.0%" },
+      "notes": "With: identifies tie-breaking bias, zero-score bypass, note lifecycle; 'What's Done Well' section; accurate code refs. Without: significant hallucinations (wrong function signatures, wrong constants), missed tie bias, no 'Done Well'."
+    },
+    "CMP-09": {
+      "prompt": "Create a Schnorr account, deploy, save credentials, recover",
+      "skill": "aztec-accounts",
+      "with_skill": { "content": 4, "structure": 5, "assertions_passed": 7, "assertions_total": 7 },
+      "without_skill": { "content": 3, "structure": 4, "assertions_passed": 4, "assertions_total": 7 },
+      "delta": { "content": "+1.0", "structure": "+1.0", "pass_rate": "+42.9%" },
+      "notes": "With: correct v4 API (createSchnorrAccount, GrumpkinScalar, AztecAddress.ZERO), PXE store note. Without: deprecated v3 API (getSchnorrAccount), wrong key type (Fr vs GrumpkinScalar), no AztecAddress.ZERO."
+    },
+    "CMP-01": { "status": "not_executed" },
+    "CMP-04": { "status": "not_executed" },
+    "CMP-05": { "status": "not_executed" },
+    "CMP-07": { "status": "not_executed" },
+    "CMP-08": { "status": "not_executed" },
+    "CMP-10": { "status": "not_executed" }
+  },
+  "e2e_tasks": [
+    {
+      "id": "TASK-01",
+      "description": "Add surrender function to PodRacing",
+      "skills_exercised": ["aztec-developer", "aztec-contract-dev"],
+      "verdict": "PASS",
+      "compilation": "SUCCESS (after fixing self.msg_sender() → self.context.maybe_msg_sender().unwrap())",
+      "notes": "Excellent design with separate storage map and time-window invariant. One API error (msg_sender pattern) that the skill should document more prominently."
+    },
+    {
+      "id": "TASK-04",
+      "description": "/review-contract src/main.nr",
+      "skills_exercised": ["review-contract"],
+      "verdict": "PASS",
+      "checklist_pass_rate": "6/6 (100%)",
+      "notes": "Comprehensive review: 7 issues (2 HIGH, 4 MEDIUM, 4 LOW), identifies zero-score bypass, note lifecycle gap, tie-breaking bias. Excellent 'What's Done Well' section."
+    },
+    {
+      "id": "TASK-05",
+      "description": "Explain PodRacing's privacy model",
+      "skills_exercised": ["aztec-developer", "aztec-contract-dev"],
+      "verdict": "PASS",
+      "checklist_pass_rate": "5/5 (100%)",
+      "notes": "Identifies all privacy boundaries, commit-reveal phases, three mechanisms of allocation hiding, and timing leakage subtlety."
+    }
+  ],
+  "aggregate": {
+    "comparator_tests": {
+      "with_skill_mean_content": 4.25,
+      "without_skill_mean_content": 2.0,
+      "content_delta": "+2.25",
+      "with_skill_mean_structure": 5.0,
+      "without_skill_mean_structure": 2.75,
+      "structure_delta": "+2.25",
+      "with_skill_mean_pass_rate": 0.9375,
+      "without_skill_mean_pass_rate": 0.33,
+      "pass_rate_delta": "+60.7%"
+    },
+    "e2e_tasks": {
+      "pass_count": 3,
+      "total_count": 3,
+      "pass_rate": 1.0
+    },
+    "highest_delta": "CMP-03: +100% (E2E testing — no output without skill)",
+    "lowest_delta": "CMP-09: +42.9% (accounts — baseline decent but wrong API version)",
+    "skills_with_positive_delta": ["aztec-deploy", "aztec-e2e-testing", "review-contract", "aztec-accounts"],
+    "skills_with_negative_delta": []
+  }
+}

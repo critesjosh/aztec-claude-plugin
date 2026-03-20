@@ -19,3 +19,4 @@ Developers should be aware of potential cyclic dependencies when building multip
 3. [Test Running](./test-running.md) - Understand compilation and execution
 4. [Authwit](./authwit.md) - Test authorization-dependent functions
 5. [Deploy Contract with Keys](./deploy-contract-with-keys.md) - Deploy with specific keys
+6. [Debugging](./debugging.md) - Diagnose and fix common TXE test failures

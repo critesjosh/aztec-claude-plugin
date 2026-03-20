@@ -55,7 +55,7 @@ fn get_config() -> Config {
 | Privacy | Encrypted, private | Plaintext, public |
 | Context | Private functions only | Public functions only |
 | Storage | Note hash tree | Public storage slots |
-| Required traits | `Eq`, `Packable`, `NullifiableNote` | `Packable`, `Serialize`, `Deserialize` |
+| Required traits | `Eq`, `Packable`, `NoteHash`, `NoteType` | `Packable`, `Serialize`, `Deserialize` |
 
 ## Reference
 `token_contract` - uses Packable structs for public config
