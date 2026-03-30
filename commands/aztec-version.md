@@ -21,7 +21,7 @@ Switch the Aztec version used by the local MCP server repositories.
 
 2. Read the Nargo.toml and extract the aztec dependency tag:
 ```toml
-aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.1.0-rc.2", directory = "aztec" }
+aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.2.0-aztecnr-rc.2", directory = "aztec" }
 ```
 
 3. If no Nargo.toml found or no aztec dependency, ask the user to specify a version explicitly.

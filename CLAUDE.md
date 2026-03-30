@@ -133,7 +133,7 @@ name = "my_contract"
 type = "contract"
 
 [dependencies]
-aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.1.0-rc.2", directory = "aztec" }
+aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.2.0-aztecnr-rc.2", directory = "aztec" }
 ```
 
 ## Version Detection
@@ -143,10 +143,10 @@ aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.1.0-rc.2
 Extract the version from `Nargo.toml`:
 
 ```toml
-aztec = { git = "...", tag = "v4.1.0-rc.2", ... }
+aztec = { git = "...", tag = "v4.2.0-aztecnr-rc.2", ... }
 ```
 
-If version differs from `v4.1.0-rc.2`:
+If version differs from `v4.2.0-aztecnr-rc.2`:
 - Warn the user that patterns may not match their version
 - Prioritize Aztec MCP server over examples in this file
 
@@ -180,12 +180,12 @@ User asks Aztec question
 
 ```bash
 /aztec-version                    # Autodetect from Nargo.toml
-/aztec-version v4.1.0-rc.2    # Use specific version
+/aztec-version v4.2.0-aztecnr-rc.2    # Use specific version
 ```
 
 Or pass version to sync:
 ```
-aztec_sync_repos({ version: "v4.1.0-rc.2", force: true })
+aztec_sync_repos({ version: "v4.2.0-aztecnr-rc.2", force: true })
 ```
 
 ## ⚠️ Critical: Simulate Before Send

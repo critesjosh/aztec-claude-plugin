@@ -115,10 +115,10 @@ When calling partial note functions on an external token contract:
 
 ```rust
 // In a private function of another contract
-let partial_note = Token::at(token_address)._prepare_private_balance_increase(to).call(&mut context);
+let partial_note = self.call(Token::at(token_address).prepare_private_balance_increase(to));
 
 // Enqueue public completion
-Token::at(token_address)._finalize_transfer_to_private(from, amount, partial_note).enqueue(&mut context);
+self.enqueue(Token::at(token_address).finalize_transfer_to_private(amount, partial_note));
 ```
 
 ## Reference
