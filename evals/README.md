@@ -27,7 +27,7 @@ The scaffold simulates a developer starting a new Aztec project — no CLAUDE.md
 
 ```
 evals/scaffold/
-├── Nargo.toml              # Aztec deps (v4.1.0-rc.2)
+├── Nargo.toml              # Aztec deps (v4.2.0-aztecnr-rc.2)
 ├── package.json            # @aztec/* TS deps
 ├── tsconfig.json
 ├── jest.integration.config.json

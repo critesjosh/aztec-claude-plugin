@@ -2,9 +2,9 @@
   "mcpServers": {
     "aztec": {
       "command": "npx",
-      "args": ["--prefer-online", "-y", "@aztec/mcp-server@latest"],
+      "args": ["-y", "@aztec/mcp-server@latest"],
       "env": {
-        "AZTEC_DEFAULT_VERSION": "v4.1.0-rc.2"
+        "AZTEC_DEFAULT_VERSION": "v4.2.0-aztecnr-rc.2"
       }
     }
   }

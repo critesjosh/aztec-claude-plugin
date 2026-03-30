@@ -126,7 +126,7 @@ fn get_name() -> FieldCompressedString {
 **Nargo.toml dependency:**
 
 ```toml
-compressed_string = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.1.0-rc.2", directory = "compressed-string" }
+compressed_string = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.2.0-aztecnr-rc.2", directory = "compressed-string" }
 ```
 
 ## Custom Structs
@@ -230,7 +230,7 @@ impl NoteHash for UintNote {
         // Custom hash computation for partial note support
         poseidon2_hash_with_separator(
             [owner.to_field(), storage_slot, randomness, self.value.to_field()],
-            GENERATOR_INDEX__NOTE_HASH,
+            DOM_SEP__NOTE_HASH,
         )
     }
 

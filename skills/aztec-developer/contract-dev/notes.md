@@ -110,13 +110,11 @@ Before defaulting to public storage, consider these patterns that preserve priva
 Emit the same note to multiple recipients. Both parties can **see** the note, but only the owner can **nullify** it:
 
 ```rust
-// Create note owned by recipient
-let note = StreamNote::new(amount, recipient);
-self.storage.streams.at(recipient).insert(note);
-
-// Emit to both parties - both can see it, only recipient can nullify
-self.emit(note, recipient, MessageDelivery.ONCHAIN_CONSTRAINED);  // Owner - can see and nullify
-self.emit(note, sender, MessageDelivery.ONCHAIN_CONSTRAINED);     // Can see, cannot nullify
+// Create note owned by recipient and deliver to both parties
+let note = StreamNote { amount, /* ... */ };
+let message = self.storage.streams.at(recipient).insert(note);
+message.deliver_to(recipient, MessageDelivery.ONCHAIN_CONSTRAINED);  // Owner - can see and nullify
+message.deliver_to(sender, MessageDelivery.ONCHAIN_CONSTRAINED);     // Can see, cannot nullify
 ```
 
 **Use case:** Sender needs visibility into note state but doesn't need to modify it.
@@ -185,10 +183,10 @@ fn create_stream(recipient: AztecAddress, amount: u128) {
         recipient  // Recipient owns the note
     );
 
-    // Emit to both parties so sender can later prove the authorization exists
-    self.storage.streams.at(recipient).insert(note);
-    self.emit(note, sender, MessageDelivery.ONCHAIN_CONSTRAINED);
-    self.emit(note, recipient, MessageDelivery.ONCHAIN_CONSTRAINED);
+    // Deliver to both parties so sender can later prove the authorization exists
+    let message = self.storage.streams.at(recipient).insert(note);
+    message.deliver_to(sender, MessageDelivery.ONCHAIN_CONSTRAINED);
+    message.deliver_to(recipient, MessageDelivery.ONCHAIN_CONSTRAINED);
 }
 
 // Cancel function - can be called by sender
@@ -255,7 +253,7 @@ Aztec has a built-in authentication witness (authwit) system. Choose pre-signed 
 
 Use these before creating custom notes:
 
-- **`UintNote`** - Stores a `U128` value with owner. Used by token balances.
+- **`UintNote`** - Stores a `u128` value with owner. Used by token balances.
 - **`PartialUintNote`** - Partially constructed `UintNote` for partial notes flow. Used with `complete` to finalize.
 - **`FieldNote`** - Stores a `Field` value. General purpose.
 - **`AddressNote`** - Stores an `AztecAddress`. Used for private address storage.
@@ -272,28 +270,24 @@ use field_note::FieldNote;
 ```rust
 use aztec::{
     macros::notes::note,
-    protocol::{address::AztecAddress, traits::Packable},
+    protocol::traits::{Deserialize, Packable, Serialize},
 };
 
-#[derive(Eq, Packable)]
+#[derive(Deserialize, Eq, Packable, Serialize)]
 #[note]
 pub struct MyNote {
-    // Your data
-    data: Field,
-    amount: u64,
-    // Required fields
-    owner: AztecAddress,
-    randomness: Field,
+    pub data: Field,
+    pub amount: u64,
 }
 ```
 
-The `#[note]` macro auto-implements `NoteHash` and `NoteType` traits.
+The `#[note]` macro auto-implements `NoteHash` and `NoteType` traits. Owner is handled by the `Owned<>` wrapper (not a field on the note), and randomness is injected automatically by the macro.
 
 ## Working with Notes
 
 ### Insert
 ```rust
-let note = UintNote::new(amount, owner);
+let note = UintNote { value: amount };
 self.storage.notes.at(owner).insert(note).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 ```
 

@@ -180,7 +180,7 @@ AMM._swap_exact_tokens_for_tokens(token_in, token_out, amount_in, amount_out_min
     │
     │  // 3. Complete the partial note with the calculated amount
     │  //    Now the user's PXE can reconstruct the full note
-    │  Token::at(token_out).finalize_transfer_to_private(amount_out, partial_note).call(self.context);
+    │  self.call(Token::at(token_out).finalize_transfer_to_private(amount_out, partial_note));
 ```
 
 ### Why This Design?

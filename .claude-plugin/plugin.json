@@ -1,6 +1,6 @@
 {
   "name": "aztec",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Claude Code plugin for Aztec smart contract and application development. Provides specialized agents, skills, and commands for building privacy-preserving applications on Aztec Network.",
   "author": {
     "name": "critesjosh"
@@ -19,9 +19,9 @@
   "mcpServers": {
     "aztec": {
       "command": "npx",
-      "args": ["--prefer-online", "-y", "@aztec/mcp-server"],
+      "args": ["-y", "@aztec/mcp-server@latest"],
       "env": {
-        "AZTEC_DEFAULT_VERSION": "v4.1.0-rc.2"
+        "AZTEC_DEFAULT_VERSION": "v4.2.0-aztecnr-rc.2"
       }
     }
   }
